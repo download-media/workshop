@@ -384,7 +384,7 @@ function SetupPage() {
         style={{ opacity: started ? 0 : 1, transform: 'scaleX(-1)' }}
       >
         <Image
-          src="/images/first-frame.png"
+          src="/images/first-frame.jpg"
           alt=""
           fill
           className="object-cover"
@@ -418,7 +418,7 @@ function SetupPage() {
           ═══════════════════════════════════════════════════ */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/images/last-frame.png"
+          src="/images/last-frame.jpg"
           alt=""
           fill
           className="object-cover"
