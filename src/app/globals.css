@@ -9,7 +9,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -46,75 +47,72 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Sky palette */
+  --color-sky-deep: #2E5E8C;
+  --color-sky-mid: #4A8AC2;
+  --color-sky-light: #7EB8E0;
+  --color-sky-pale: #B8D4E8;
+  --color-sky-wash: #E3EFF7;
+  --color-cloud: #F4F7FA;
+  --color-cloud-warm: #F0ECE6;
+  --color-ink: #1A1A1A;
+  --color-ink-soft: #3A3A3A;
+  --color-ink-muted: #6A7A8A;
+  --color-warm-accent: #E8855A;
+  --color-coral: #E85A5A;
+
+  /* Kept for backwards compat with exercise pages */
+  --color-ws-green: #4A8AC2;
+  --color-ws-blue: #2E5E8C;
+  --color-ws-warm: #E8855A;
+  --color-ws-danger: #E85A5A;
+  --color-ws-sky: #7EB8E0;
+  --color-ws-mint: #B8D4E8;
+  --color-ws-surface: #F4F7FA;
+  --color-ws-base: #E3EFF7;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 1rem;
+
+  --background: #E8F0F6;
+  --foreground: #1A1A1A;
+  --card: rgba(255, 255, 255, 0.35);
+  --card-foreground: #1A1A1A;
+  --popover: rgba(255, 255, 255, 0.6);
+  --popover-foreground: #1A1A1A;
+  --primary: #2E5E8C;
+  --primary-foreground: #ffffff;
+  --secondary: #4A8AC2;
+  --secondary-foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.3);
+  --muted-foreground: #6A7A8A;
+  --accent: rgba(255, 255, 255, 0.2);
+  --accent-foreground: #1A1A1A;
+  --destructive: #E85A5A;
+  --border: rgba(255, 255, 255, 0.35);
+  --input: rgba(255, 255, 255, 0.4);
+  --ring: #4A8AC2;
+  --chart-1: #2E5E8C;
+  --chart-2: #4A8AC2;
+  --chart-3: #E8855A;
+  --chart-4: #E85A5A;
+  --chart-5: #7EB8E0;
+  --sidebar: rgba(255, 255, 255, 0.2);
+  --sidebar-foreground: #1A1A1A;
+  --sidebar-primary: #2E5E8C;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(255, 255, 255, 0.3);
+  --sidebar-accent-foreground: #1A1A1A;
+  --sidebar-border: rgba(255, 255, 255, 0.3);
+  --sidebar-ring: #4A8AC2;
+  --font-heading: var(--font-display);
 }
 
+/* No dark mode — this app is always light/sky */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  color-scheme: light;
 }
 
 @layer base {
@@ -126,5 +124,336 @@
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+    color-scheme: light;
+  }
+}
+
+/* ── Sky background ────────────────────────────────── */
+
+.sky-bg {
+  background: linear-gradient(180deg,
+    #7EB8E0 0%,
+    #9CC8E8 20%,
+    #B8D4E8 40%,
+    #D6E4EE 60%,
+    #E3EFF7 80%,
+    #E8F0F6 100%
+  );
+  min-height: 100vh;
+}
+
+.sky-bg-deep {
+  background: linear-gradient(180deg,
+    #4A8AC2 0%,
+    #6AA0D0 30%,
+    #8BB8DE 60%,
+    #B8D4E8 100%
+  );
+}
+
+/* ── iOS Liquid Glass ──────────────────────────────── */
+
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.liquid-glass-strong {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(60px) saturate(200%);
+  -webkit-backdrop-filter: blur(60px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.liquid-glass-subtle {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Keep glass classes for exercise pages backwards compat */
+.glass {
+  background: rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.glass-strong {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(60px) saturate(200%);
+  -webkit-backdrop-filter: blur(60px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* ── Helvetica Bold Caps ───────────────────────────── */
+
+.title-caps {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.title-caps-xl {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.92;
+  font-size: clamp(3rem, 8vw, 7rem);
+}
+
+.title-caps-lg {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0em;
+  line-height: 0.95;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.title-caps-md {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+}
+
+.title-caps-sm {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  font-size: 0.6875rem;
+}
+
+/* ── Editorial text classes (kept for backwards compat) ── */
+.text-editorial-xl {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.92;
+  font-size: clamp(3rem, 8vw, 7rem);
+}
+.text-editorial-lg {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0em;
+  line-height: 0.95;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+.text-editorial-md {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+}
+
+/* ── Text on glass ─────────────────────────────────── */
+
+.text-on-glass {
+  color: #1A1A1A;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+/* ── Text gradients (updated for sky theme) ────────── */
+
+.text-gradient-green { color: #2E5E8C; }
+.text-gradient-warm { color: #E8855A; }
+.text-gradient-blue { color: #4A8AC2; }
+
+.text-gradient-hero {
+  background: linear-gradient(160deg, #1A1A1A 0%, #4A8AC2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-subtle {
+  color: #1A1A1A;
+}
+
+/* ── Floating image ────────────────────────────────── */
+
+.float-image {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+.float-image-slow {
+  animation: float-slow 10s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+/* ── Parallax hover on images ──────────────────────── */
+
+.hover-lift {
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Custom scrollbar (light) ──────────────────────── */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
+}
+
+/* ── Focus ring ────────────────────────────────────── */
+
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 2px rgba(74, 138, 194, 0.3);
+}
+
+/* ── Input overrides ───────────────────────────────── */
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(26, 26, 26, 0.3);
+}
+
+input, textarea, select {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(74, 138, 194, 0.4);
+  box-shadow: 0 0 0 3px rgba(74, 138, 194, 0.08);
+}
+
+/* ── Selection ─────────────────────────────────────── */
+
+::selection {
+  background: rgba(74, 138, 194, 0.2);
+  color: #1A1A1A;
+}
+
+/* ── Glow effects (updated) ────────────────────────── */
+
+.glow-green {
+  box-shadow: 0 0 24px rgba(74, 138, 194, 0.2), 0 0 80px rgba(74, 138, 194, 0.06);
+}
+
+.glow-blue {
+  box-shadow: 0 0 24px rgba(46, 94, 140, 0.2), 0 0 80px rgba(46, 94, 140, 0.06);
+}
+
+/* ── Animated gradient bg (sky version) ────────────── */
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.animated-gradient-bg {
+  background: linear-gradient(180deg, #7EB8E0 0%, #B8D4E8 50%, #E3EFF7 100%);
+}
+
+/* ── Kept for compat ──────────────────────────────── */
+.dot-grid { background: none; }
+.grain { display: none; }
+.phase-accent::before { display: none; }
+.editorial-rule {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.06) 20%, rgba(0,0,0,0.06) 80%, transparent);
+}
+
+/* ── Floating glass orbs ──────────────────────────── */
+
+@keyframes orb-drift-1 {
+  0%   { transform: translate(0%, 0%); }
+  20%  { transform: translate(40%, 20%); }
+  40%  { transform: translate(25%, 50%); }
+  60%  { transform: translate(50%, 30%); }
+  80%  { transform: translate(10%, 45%); }
+  100% { transform: translate(0%, 0%); }
+}
+
+.glass-orb-1 {
+  animation: orb-drift-1 25s ease-in-out infinite;
+}
+
+/* ── Subtle breathing opacity ─────────────────────── */
+
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Print styles ──────────────────────────────────── */
+
+@media print {
+  .sky-bg, .sky-bg-deep {
+    background: white !important;
+  }
+  .liquid-glass, .liquid-glass-strong, .liquid-glass-subtle,
+  .glass, .glass-strong, .glass-subtle {
+    background: white !important;
+    backdrop-filter: none !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
   }
 }
