@@ -10,6 +10,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'DWNLD Workshop',
   description: 'Brand discovery and marketing workshop by Download Media',
+  icons: {
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
+  },
 }
 
 export default function RootLayout({
