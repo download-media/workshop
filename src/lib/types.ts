@@ -101,6 +101,24 @@ export interface PlatformStrategy {
   priority: 'kill' | 'keep' | 'invest' | ''
 }
 
+export interface OnCameraPerson {
+  id: string
+  name: string
+  role: string
+  notes: string
+}
+
+export interface Logistics {
+  onCameraPeople: OnCameraPerson[]
+  platforms: string[]
+  postingVolume: string
+  videoPercentage: string
+  carouselPercentage: string
+  otherFormats: string
+  shootFrequency: string
+  notes: string
+}
+
 export interface VideoStyle {
   id: string
   style: string

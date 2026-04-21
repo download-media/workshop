@@ -20,6 +20,8 @@ import type {
   CampaignIdea,
   Priority,
   PhaseId,
+  Logistics,
+  OnCameraPerson,
 } from './types'
 
 interface WorkshopStore {
@@ -77,6 +79,11 @@ interface WorkshopStore {
   removeContentPillar: (id: string) => void
   platformStrategies: PlatformStrategy[]
   updatePlatformStrategy: (id: string, data: Partial<PlatformStrategy>) => void
+  logistics: Logistics
+  setLogistics: (data: Partial<Logistics>) => void
+  addOnCameraPerson: (person: OnCameraPerson) => void
+  updateOnCameraPerson: (id: string, data: Partial<OnCameraPerson>) => void
+  removeOnCameraPerson: (id: string) => void
   videoStyles: VideoStyle[]
   updateVideoStyle: (id: string, rating: number) => void
   campaignIdeas: CampaignIdea[]
@@ -151,6 +158,16 @@ const initialState = {
   toneDimensions: defaultTone,
   contentPillars: [],
   platformStrategies: defaultPlatforms,
+  logistics: {
+    onCameraPeople: [],
+    platforms: [],
+    postingVolume: '',
+    videoPercentage: '',
+    carouselPercentage: '',
+    otherFormats: '',
+    shootFrequency: '',
+    notes: '',
+  } as Logistics,
   videoStyles: defaultVideoStyles,
   campaignIdeas: [],
   priorities: [],
@@ -208,6 +225,11 @@ export const useWorkshopStore = create<WorkshopStore>()(
       removeContentPillar: (id) => set((s) => ({ contentPillars: s.contentPillars.filter((p) => p.id !== id) })),
 
       updatePlatformStrategy: (id, data) => set((s) => ({ platformStrategies: s.platformStrategies.map((p) => p.id === id ? { ...p, ...data } : p) })),
+
+      setLogistics: (data) => set((s) => ({ logistics: { ...s.logistics, ...data } })),
+      addOnCameraPerson: (person) => set((s) => ({ logistics: { ...s.logistics, onCameraPeople: [...s.logistics.onCameraPeople, person] } })),
+      updateOnCameraPerson: (id, data) => set((s) => ({ logistics: { ...s.logistics, onCameraPeople: s.logistics.onCameraPeople.map((p) => p.id === id ? { ...p, ...data } : p) } })),
+      removeOnCameraPerson: (id) => set((s) => ({ logistics: { ...s.logistics, onCameraPeople: s.logistics.onCameraPeople.filter((p) => p.id !== id) } })),
 
       updateVideoStyle: (id, rating) => set((s) => ({ videoStyles: s.videoStyles.map((v) => v.id === id ? { ...v, rating } : v) })),
 

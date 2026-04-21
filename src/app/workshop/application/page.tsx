@@ -9,15 +9,15 @@ import { ExerciseCard } from '@/components/workshop/ExerciseCard'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import type { ContentPillar, CampaignIdea, PlatformStrategy } from '@/lib/types'
+import type { ContentPillar, CampaignIdea } from '@/lib/types'
 
 /* ────────────────────────────────────────────────────────────
    Tab Navigation
    ──────────────────────────────────────────────────────────── */
 
 const TABS = [
+  { id: 'logistics', label: 'Logistics' },
   { id: 'pillars', label: 'Content Pillars' },
-  { id: 'platform', label: 'Platform Strategy' },
   { id: 'video', label: 'Video Style' },
   { id: 'campaign', label: 'Campaign Ideation' },
 ] as const
@@ -47,6 +47,186 @@ const SCAMPER = [
   { letter: 'E', word: 'Eliminate', question: 'What can you remove or simplify?', color: '#B8D4E8' },
   { letter: 'R', word: 'Reverse', question: 'What if you did the opposite?', color: '#2E5E8C' },
 ]
+
+/* ────────────────────────────────────────────────────────────
+   Content Pillars Tab
+   ──────────────────────────────────────────────────────────── */
+
+/* ────────────────────────────────────────────────────────────
+   Logistics Tab
+   ──────────────────────────────────────────────────────────── */
+
+const PLATFORM_OPTIONS = ['Instagram', 'TikTok', 'LinkedIn', 'YouTube', 'X / Twitter', 'Facebook']
+
+function LogisticsTab() {
+  const { logistics, setLogistics, addOnCameraPerson, updateOnCameraPerson, removeOnCameraPerson } = useWorkshopStore()
+
+  const handleAddPerson = () => {
+    addOnCameraPerson({
+      id: uid(),
+      name: '',
+      role: '',
+      notes: '',
+    })
+  }
+
+  const togglePlatform = (platform: string) => {
+    const current = logistics.platforms
+    if (current.includes(platform)) {
+      setLogistics({ platforms: current.filter((p) => p !== platform) })
+    } else {
+      setLogistics({ platforms: [...current, platform] })
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-10">
+      {/* On Camera People */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">ON CAMERA</h3>
+        <p className="text-sm text-[#2E2E2E] mb-6">Who from the client team will be on camera or featured in content?</p>
+
+        <div className="flex flex-col gap-3 mb-4">
+          {logistics.onCameraPeople.map((person) => (
+            <motion.div
+              key={person.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="liquid-glass rounded-2xl p-5 group"
+            >
+              <div className="flex gap-4">
+                <div className="flex-1 grid grid-cols-2 gap-3">
+                  <Input
+                    value={person.name}
+                    onChange={(e) => updateOnCameraPerson(person.id, { name: e.target.value })}
+                    placeholder="Name"
+                    className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+                  />
+                  <Input
+                    value={person.role}
+                    onChange={(e) => updateOnCameraPerson(person.id, { role: e.target.value })}
+                    placeholder="Role (e.g. Founder, Lead Designer)"
+                    className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+                  />
+                  <Input
+                    value={person.notes}
+                    onChange={(e) => updateOnCameraPerson(person.id, { notes: e.target.value })}
+                    placeholder="Notes (e.g. comfortable on camera, prefers voiceover)"
+                    className="h-10 col-span-2 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+                  />
+                </div>
+                <button
+                  onClick={() => removeOnCameraPerson(person.id)}
+                  className="self-start text-[#1A1A1A]/10 hover:text-[#E85A5A] transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <button
+          onClick={handleAddPerson}
+          className="w-full rounded-2xl border border-dashed border-white/25 bg-white/8 py-3 transition-all hover:border-white/40 hover:bg-white/12"
+        >
+          <span className="title-caps-sm text-[#1A1A1A]/40">+ ADD PERSON</span>
+        </button>
+      </div>
+
+      {/* Platforms */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">PLATFORMS</h3>
+        <p className="text-sm text-[#2E2E2E] mb-4">Which platforms are we posting on?</p>
+
+        <div className="flex flex-wrap gap-2">
+          {PLATFORM_OPTIONS.map((platform) => {
+            const isActive = logistics.platforms.includes(platform)
+            return (
+              <button
+                key={platform}
+                onClick={() => togglePlatform(platform)}
+                className={`rounded-full px-5 py-2.5 text-xs font-bold tracking-wider transition-all duration-300 ${
+                  isActive
+                    ? 'bg-[#1A1A1A] text-white'
+                    : 'text-[#1A1A1A]/25 hover:text-[#1A1A1A]/50 bg-white/10'
+                }`}
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+              >
+                {platform.toUpperCase()}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Posting Volume & Format Split */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">VOLUME AND FORMAT</h3>
+        <p className="text-sm text-[#2E2E2E] mb-6">Posting cadence and content format breakdown.</p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">POSTS PER WEEK</label>
+            <Input
+              value={logistics.postingVolume}
+              onChange={(e) => setLogistics({ postingVolume: e.target.value })}
+              placeholder="e.g. 5"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">SHOOT FREQUENCY</label>
+            <Input
+              value={logistics.shootFrequency}
+              onChange={(e) => setLogistics({ shootFrequency: e.target.value })}
+              placeholder="e.g. 1 day per month"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">VIDEO %</label>
+            <Input
+              value={logistics.videoPercentage}
+              onChange={(e) => setLogistics({ videoPercentage: e.target.value })}
+              placeholder="e.g. 60%"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">CAROUSEL %</label>
+            <Input
+              value={logistics.carouselPercentage}
+              onChange={(e) => setLogistics({ carouselPercentage: e.target.value })}
+              placeholder="e.g. 30%"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+          <div className="liquid-glass rounded-2xl p-5 col-span-2">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">OTHER FORMATS</label>
+            <Input
+              value={logistics.otherFormats}
+              onChange={(e) => setLogistics({ otherFormats: e.target.value })}
+              placeholder="e.g. Stories 10%, static posts, polls"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Notes */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">NOTES</h3>
+        <Textarea
+          value={logistics.notes}
+          onChange={(e) => setLogistics({ notes: e.target.value })}
+          placeholder="Any other logistics, constraints, or details..."
+          className="min-h-[100px] bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25 resize-none"
+        />
+      </div>
+    </div>
+  )
+}
 
 /* ────────────────────────────────────────────────────────────
    Content Pillars Tab
@@ -287,158 +467,6 @@ function ContentPillarsTab() {
           </p>
         </motion.div>
       )}
-    </div>
-  )
-}
-
-/* ────────────────────────────────────────────────────────────
-   Platform Strategy Tab
-   ──────────────────────────────────────────────────────────── */
-
-function PlatformStrategyTab() {
-  const { platformStrategies, updatePlatformStrategy } = useWorkshopStore()
-
-  const fields = [
-    { key: 'role' as const, label: 'Role', placeholder: 'e.g. Thought leadership' },
-    { key: 'audience' as const, label: 'Audience', placeholder: 'e.g. B2B decision-makers' },
-    { key: 'contentTypes' as const, label: 'Content Types', placeholder: 'e.g. Carousels, video' },
-    { key: 'frequency' as const, label: 'Frequency', placeholder: 'e.g. 3x/week' },
-  ]
-
-  const priorityOptions: { value: PlatformStrategy['priority']; label: string; bg: string; text: string }[] = [
-    { value: 'kill', label: 'KILL', bg: 'rgba(232,90,90,0.15)', text: '#E85A5A' },
-    { value: 'keep', label: 'KEEP', bg: 'rgba(0,0,0,0.05)', text: '#6A7A8A' },
-    { value: 'invest', label: 'INVEST', bg: 'rgba(46,94,140,0.15)', text: '#2E5E8C' },
-  ]
-
-  return (
-    <div>
-      <p className="mb-6 text-sm" style={{ color: '#6A7A8A' }}>
-        Map each platform&#39;s purpose, audience, and investment priority.
-      </p>
-
-      {/* Desktop data grid */}
-      <div className="hidden lg:block">
-        <div className="liquid-glass overflow-hidden rounded-2xl">
-          {/* Header */}
-          <div className="grid grid-cols-[120px_1fr_1fr_1fr_1fr_150px] items-center border-b border-white/20">
-            <div className="px-5 py-3.5 title-caps-sm" style={{ color: '#5A5A5A' }}>Platform</div>
-            {fields.map((f) => (
-              <div key={f.key} className="px-4 py-3.5 title-caps-sm" style={{ color: '#5A5A5A' }}>{f.label}</div>
-            ))}
-            <div className="px-4 py-3.5 title-caps-sm text-center" style={{ color: '#5A5A5A' }}>Priority</div>
-          </div>
-
-          {/* Rows */}
-          {platformStrategies.map((platform, idx) => (
-            <motion.div
-              key={platform.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: idx * 0.04 }}
-              className="grid grid-cols-[120px_1fr_1fr_1fr_1fr_150px] items-center border-b border-white/10 last:border-b-0 transition-colors hover:bg-white/10"
-            >
-              <div className="px-5 py-3">
-                <span className="title-caps-sm" style={{ color: '#1A1A1A' }}>{platform.platform}</span>
-              </div>
-
-              {fields.map((f) => (
-                <div key={f.key} className="px-3 py-2">
-                  <input
-                    value={platform[f.key]}
-                    onChange={(e) => updatePlatformStrategy(platform.id, { [f.key]: e.target.value })}
-                    placeholder={f.placeholder}
-                    className="h-9 w-full rounded-lg border border-transparent bg-transparent px-2.5 text-sm text-[#1A1A1A] placeholder:text-[#1A1A1A]/25 transition-colors focus:border-white/30 focus:bg-white/15 focus:outline-none"
-                  />
-                </div>
-              ))}
-
-              <div className="flex items-center justify-center gap-1 px-2 py-2">
-                {priorityOptions.map((opt) => {
-                  const isActive = platform.priority === opt.value
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() => updatePlatformStrategy(platform.id, { priority: isActive ? '' : opt.value })}
-                      className="rounded-md px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all"
-                      style={{
-                        backgroundColor: isActive ? opt.bg : 'transparent',
-                        color: isActive ? opt.text : '#8A8A8A',
-                      }}
-                    >
-                      {opt.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="space-y-4 lg:hidden">
-        {platformStrategies.map((platform, idx) => (
-          <motion.div
-            key={platform.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.06 }}
-            className="liquid-glass rounded-2xl p-5"
-          >
-            <div className="mb-4">
-              <span className="title-caps-sm" style={{ color: '#1A1A1A' }}>
-                {platform.platform}
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {fields.map((f) => (
-                <div key={f.key}>
-                  <label className="mb-1 block text-xs" style={{ color: '#6A7A8A' }}>
-                    {f.label}
-                  </label>
-                  <Input
-                    value={platform[f.key]}
-                    onChange={(e) => updatePlatformStrategy(platform.id, { [f.key]: e.target.value })}
-                    placeholder={f.placeholder}
-                    className="text-sm"
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4">
-              <label className="mb-2 block text-xs" style={{ color: '#6A7A8A' }}>Priority</label>
-              <div className="flex gap-2">
-                {priorityOptions.map((opt) => {
-                  const isActive = platform.priority === opt.value
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() =>
-                        updatePlatformStrategy(platform.id, {
-                          priority: isActive ? '' : opt.value,
-                        })
-                      }
-                      className="flex-1 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all"
-                      style={{
-                        backgroundColor: isActive ? opt.bg : 'rgba(0,0,0,0.03)',
-                        color: isActive ? opt.text : '#8A8A8A',
-                        border: `1px solid ${isActive ? `${opt.text}25` : 'rgba(0,0,0,0.04)'}`,
-                      }}
-                      aria-label={`Set ${platform.platform} priority to ${opt.label}`}
-                      aria-pressed={isActive}
-                    >
-                      {opt.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
     </div>
   )
 }
@@ -721,8 +749,8 @@ export default function ApplicationPage() {
         description=""
       >
         <div>
+          {activeTab === 'logistics' && <LogisticsTab />}
           {activeTab === 'pillars' && <ContentPillarsTab />}
-          {activeTab === 'platform' && <PlatformStrategyTab />}
           {activeTab === 'video' && <VideoStyleTab />}
           {activeTab === 'campaign' && <CampaignIdeationTab />}
         </div>
