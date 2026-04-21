@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Printer, ArrowRight } from 'lucide-react'
 import { useWorkshopStore } from '@/lib/store'
@@ -127,9 +127,51 @@ function GoldenCircleDiagram({ what, how, why }: { what: string; how: string; wh
 export default function SummaryPage() {
   const store = useWorkshopStore()
   const printRef = useRef<HTMLDivElement>(null)
+  const [brief, setBrief] = useState<string | null>(null)
+  const [interpreting, setInterpreting] = useState(false)
 
   const handlePrint = () => {
     window.print()
+  }
+
+  const handleInterpret = async () => {
+    setInterpreting(true)
+    try {
+      const workshopData = {
+        goldenCircle: store.goldenCircle,
+        audiences: store.audiences,
+        empathyMaps: store.empathyMaps,
+        beforeAfter: store.beforeAfter,
+        competitors: store.competitors,
+        landscapePositions: store.landscapePositions,
+        landscapeAxes: store.landscapeAxes,
+        voiceAttributes: store.voiceAttributes.filter(a => a.category !== 'torn'),
+        personalitySliders: store.personalitySliders,
+        voiceGuardrails: store.voiceGuardrails,
+        toneDimensions: store.toneDimensions,
+        contentPillars: store.contentPillars,
+        platformStrategies: store.platformStrategies,
+        videoStyles: store.videoStyles,
+        campaignIdeas: store.campaignIdeas,
+        priorities: store.priorities,
+      }
+      const res = await fetch('/api/interpret', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workshopData,
+          clientName: store.config.clientName,
+          serviceType: store.config.serviceType,
+        }),
+      })
+      const data = await res.json()
+      if (data.brief) setBrief(data.brief)
+      else setBrief('Error: ' + (data.error || 'Unknown error'))
+    } catch (e) {
+      setBrief('Error: Failed to connect to API')
+    } finally {
+      setInterpreting(false)
+    }
   }
 
   const sortedAudiences = [...store.audiences].sort((a, b) => a.rank - b.rank)
@@ -188,15 +230,50 @@ export default function SummaryPage() {
               )}
             </div>
           </div>
-          <button
-            onClick={handlePrint}
-            className="no-print inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
-            style={{ backgroundColor: '#1A1A1A' }}
-          >
-            <Printer className="h-3.5 w-3.5" />
-            Print / Export
-          </button>
+          <div className="no-print flex items-center gap-3">
+            <button
+              onClick={handleInterpret}
+              disabled={interpreting}
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors hover:opacity-90"
+              style={{ backgroundColor: '#2E5E8C', color: 'white' }}
+            >
+              {interpreting ? 'INTERPRETING...' : 'GENERATE BRIEF'}
+            </button>
+            <button
+              onClick={handlePrint}
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
+              style={{ backgroundColor: '#1A1A1A' }}
+            >
+              <Printer className="h-3.5 w-3.5" />
+              PRINT
+            </button>
+          </div>
         </motion.div>
+
+        {/* AI-generated strategic brief */}
+        {brief && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="liquid-glass rounded-2xl p-8 mb-8"
+          >
+            <h2 className="title-caps-md mb-6" style={{ color: '#1A1A1A' }}>STRATEGIC BRIEF</h2>
+            <div className="prose prose-sm max-w-none" style={{ color: '#1A1A1A' }}>
+              {brief.split('\n').map((line, i) => {
+                if (!line.trim()) return <br key={i} />
+                // Section headers (all caps lines)
+                if (line === line.toUpperCase() && line.trim().length > 3 && !line.match(/^\d/)) {
+                  return <h3 key={i} className="title-caps-sm mt-8 mb-3" style={{ color: '#2E5E8C' }}>{line}</h3>
+                }
+                // Numbered items
+                if (line.match(/^\d+\./)) {
+                  return <p key={i} className="ml-4 mb-2 text-sm leading-relaxed">{line}</p>
+                }
+                return <p key={i} className="mb-2 text-sm leading-relaxed">{line}</p>
+              })}
+            </div>
+          </motion.div>
+        )}
 
         <div className="space-y-8">
           {/* ── Phase 1: Foundation ─────────────────────────── */}

@@ -5,6 +5,7 @@ import { useState, useEffect, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useWorkshopStore } from '@/lib/store'
+import { useAutoSave } from '@/lib/use-auto-save'
 import { PHASES, getNextPhase, getPrevPhase } from '@/lib/phases'
 import type { PhaseId } from '@/lib/types'
 
@@ -51,6 +52,7 @@ const PHASE_IMAGES: Record<string, string> = {
 export default function WorkshopLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { currentPhase, setCurrentPhase, config } = useWorkshopStore()
+  useAutoSave() // Auto-saves workshop data to Supabase every 3s
 
   const currentIndex = WORKSHOP_PHASES.findIndex((p) => p.id === currentPhase)
   const prev = getPrevPhase(currentPhase)
