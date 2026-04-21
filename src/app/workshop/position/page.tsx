@@ -680,21 +680,17 @@ export default function PositionPage() {
     <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto flex flex-col gap-8">
         {/* Header */}
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="size-8 rounded-lg bg-[#2E5E8C]/10 border border-[#2E5E8C]/15 flex items-center justify-center">
-              <span className="text-sm font-bold text-[#2E5E8C]">3</span>
-            </div>
-            <span className="title-caps-sm text-[#2E5E8C]">
-              Phase 3
-            </span>
-          </div>
-          <h1 className="title-caps-lg text-[#1A1A1A] mt-2">
+        <div className="mb-14">
+          <span className="title-caps-sm mb-4 block text-sky-deep/50">
+            PHASE 03
+          </span>
+          <h1 className="title-caps-lg text-ink">
             Competitive Position
           </h1>
-          <p className="text-[#2E2E2E] mt-1">
+          <p className="mt-4 text-base text-[#2E2E2E]">
             Understand the competitive landscape and find your unique position.
           </p>
+          <div className="mt-8 h-px w-full bg-ink/[0.06]" />
         </div>
 
         {/* Tabs */}

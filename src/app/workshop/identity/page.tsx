@@ -527,21 +527,17 @@ export default function IdentityPage() {
     <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
         {/* Header */}
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="size-8 rounded-lg bg-[#E8855A]/10 border border-[#E8855A]/15 flex items-center justify-center">
-              <span className="text-sm font-bold text-[#E8855A]">4</span>
-            </div>
-            <span className="title-caps-sm text-[#E8855A]">
-              Phase 4
-            </span>
-          </div>
-          <h1 className="title-caps-lg text-[#1A1A1A] mt-2">
+        <div className="mb-14">
+          <span className="title-caps-sm mb-4 block text-sky-deep/50">
+            PHASE 04
+          </span>
+          <h1 className="title-caps-lg text-ink">
             Brand Identity
           </h1>
-          <p className="text-[#2E2E2E] mt-1">
+          <p className="mt-4 text-base text-[#2E2E2E]">
             Define the voice, personality, and tonal range of the brand.
           </p>
+          <div className="mt-8 h-px w-full bg-ink/[0.06]" />
         </div>
 
         {/* Tabs */}
