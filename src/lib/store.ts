@@ -144,7 +144,7 @@ const initialState = {
   beforeAfter: { before: [], after: [], statement: '' },
   competitors: [],
   landscapePositions: [],
-  landscapeAxes: { xLeft: 'Corporate', xRight: 'Human', yTop: 'Modern', yBottom: 'Traditional' },
+  landscapeAxes: { xLeft: 'Polished', xRight: 'Raw', yTop: 'Corporate', yBottom: 'Human' },
   voiceAttributes: defaultVoiceAttributes,
   personalitySliders: defaultSliders,
   voiceGuardrails: [],
