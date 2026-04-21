@@ -129,7 +129,7 @@ function CompetitorCard({
         className="bg-white/30 border-white/30 text-[#1A1A1A] placeholder:text-[#6A7A8A]/50 focus-visible:border-[#4A8AC2]/40"
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="flex flex-col gap-4">
         <ScoreDots
           value={competitor.visualIdentity}
           onChange={(v) => onUpdate({ visualIdentity: v })}
