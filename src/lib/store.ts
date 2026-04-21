@@ -103,7 +103,7 @@ const defaultVoiceAttributes: VoiceAttribute[] = [
 ].map((word, i) => ({ id: `va-${i}`, word, category: 'torn' as const }))
 
 const defaultSliders: PersonalitySlider[] = [
-  { id: 'ps-1', leftLabel: 'Friend', rightLabel: 'Authority', value: 50 },
+  { id: 'ps-1', leftLabel: 'Friendly', rightLabel: 'Authority', value: 50 },
   { id: 'ps-2', leftLabel: 'Innovative', rightLabel: 'Classic', value: 50 },
   { id: 'ps-3', leftLabel: 'Playful', rightLabel: 'Serious', value: 50 },
   { id: 'ps-4', leftLabel: 'Mass Appeal', rightLabel: 'Elite', value: 50 },

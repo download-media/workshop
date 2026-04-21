@@ -230,11 +230,11 @@ function PersonalitySliderRow({
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="relative flex items-center justify-between mb-4">
         <span className="title-caps-sm text-[#1A1A1A]">
           {leftLabel}
         </span>
-        <span className="text-xs font-mono text-[#1A1A1A] tabular-nums liquid-glass rounded-full px-3 py-1">
+        <span className="absolute left-1/2 -translate-x-1/2 text-xs font-mono text-[#1A1A1A] tabular-nums liquid-glass rounded-full px-3 py-1">
           {value}
         </span>
         <span className="title-caps-sm text-[#1A1A1A]">
