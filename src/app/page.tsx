@@ -309,17 +309,30 @@ function SetupPage() {
     }
   }, [started])
 
-  // Spacebar or click to start
+  // Skip video — jump straight to form
+  const handleSkipToForm = useCallback(() => {
+    if (videoRef.current) videoRef.current.pause()
+    setStarted(true)
+    setVideoEnded(true)
+    setVideoFading(true)
+    setFormVisible(true)
+  }, [])
+
+  // Spacebar: first press starts video, second press skips to form
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.code === 'Space') {
         e.preventDefault()
-        handleStart()
+        if (!started) {
+          handleStart()
+        } else if (!formVisible) {
+          handleSkipToForm()
+        }
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [handleStart])
+  }, [handleStart, handleSkipToForm, started, formVisible])
 
   // Start fading video before it fully ends — crossfade during final motion
   const [videoFading, setVideoFading] = useState(false)
