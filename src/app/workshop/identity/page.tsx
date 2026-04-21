@@ -548,52 +548,12 @@ export default function IdentityPage() {
         <TabNav active={tab} onChange={setTab} />
 
         {/* Content */}
-        <AnimatePresence mode="wait">
-          {tab === 'voice-sort' && (
-            <motion.div
-              key="voice-sort"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <VoiceSort />
-            </motion.div>
-          )}
-          {tab === 'sliders' && (
-            <motion.div
-              key="sliders"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <PersonalitySliders />
-            </motion.div>
-          )}
-          {tab === 'guardrails' && (
-            <motion.div
-              key="guardrails"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <VoiceGuardrails />
-            </motion.div>
-          )}
-          {tab === 'tone' && (
-            <motion.div
-              key="tone"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ToneDimensions />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div>
+          {tab === 'voice-sort' && <VoiceSort />}
+          {tab === 'sliders' && <PersonalitySliders />}
+          {tab === 'guardrails' && <VoiceGuardrails />}
+          {tab === 'tone' && <ToneDimensions />}
+        </div>
       </div>
     </div>
   )

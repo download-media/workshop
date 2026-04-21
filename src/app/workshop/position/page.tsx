@@ -701,29 +701,9 @@ export default function PositionPage() {
         <TabToggle active={tab} onChange={setTab} />
 
         {/* Content */}
-        <AnimatePresence mode="wait">
-          {tab === 'audit' ? (
-            <motion.div
-              key="audit"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <CompetitiveAudit />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="landscape"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <LandscapeMatrix />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div>
+          {tab === 'audit' ? <CompetitiveAudit /> : <LandscapeMatrix />}
+        </div>
       </div>
     </div>
   )

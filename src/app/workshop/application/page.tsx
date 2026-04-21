@@ -720,20 +720,12 @@ export default function ApplicationPage() {
         title={TABS.find((t) => t.id === activeTab)!.label}
         description=""
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25 }}
-          >
-            {activeTab === 'pillars' && <ContentPillarsTab />}
-            {activeTab === 'platform' && <PlatformStrategyTab />}
-            {activeTab === 'video' && <VideoStyleTab />}
-            {activeTab === 'campaign' && <CampaignIdeationTab />}
-          </motion.div>
-        </AnimatePresence>
+        <div>
+          {activeTab === 'pillars' && <ContentPillarsTab />}
+          {activeTab === 'platform' && <PlatformStrategyTab />}
+          {activeTab === 'video' && <VideoStyleTab />}
+          {activeTab === 'campaign' && <CampaignIdeationTab />}
+        </div>
       </ExerciseCard>
     </div>
   )
