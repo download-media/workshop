@@ -116,6 +116,9 @@ export interface Logistics {
   carouselPercentage: string
   otherFormats: string
   shootFrequency: string
+  socialGoal: string
+  socialPurpose: string
+  desiredOutcomes: string[]
   storyStrategy: string
   metaAdsBudget: string
   metaAdsGoal: string

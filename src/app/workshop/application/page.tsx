@@ -70,6 +70,26 @@ function LogisticsTab() {
     })
   }
 
+  const OUTCOME_OPTIONS = [
+    'Website Traffic',
+    'Newsletter Signups',
+    'Online Purchases',
+    'Lead Generation',
+    'Brand Awareness',
+    'Community Building',
+    'Recruitment',
+    'Thought Leadership',
+  ]
+
+  const toggleOutcome = (outcome: string) => {
+    const current = logistics.desiredOutcomes
+    if (current.includes(outcome)) {
+      setLogistics({ desiredOutcomes: current.filter((o) => o !== outcome) })
+    } else {
+      setLogistics({ desiredOutcomes: [...current, outcome] })
+    }
+  }
+
   const togglePlatform = (platform: string) => {
     const current = logistics.platforms
     if (current.includes(platform)) {
@@ -81,6 +101,54 @@ function LogisticsTab() {
 
   return (
     <div className="flex flex-col gap-10">
+      {/* Goals */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">GOALS</h3>
+        <p className="text-sm text-[#2E2E2E] mb-6">Why does this brand want social media? What role does it play in the business?</p>
+
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">PURPOSE</label>
+            <Textarea
+              value={logistics.socialPurpose}
+              onChange={(e) => setLogistics({ socialPurpose: e.target.value })}
+              placeholder="What role does social media play in their business? Why are they investing in it now?"
+              className="min-h-[80px] bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25 resize-none"
+            />
+          </div>
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">SUCCESS LOOKS LIKE</label>
+            <Input
+              value={logistics.socialGoal}
+              onChange={(e) => setLogistics({ socialGoal: e.target.value })}
+              placeholder="e.g. 50 qualified leads per month from Instagram, 10K followers in 6 months"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+        </div>
+
+        <label className="title-caps-sm text-[#1A1A1A]/40 mb-3 block">DESIRED OUTCOMES</label>
+        <div className="flex flex-wrap gap-2">
+          {OUTCOME_OPTIONS.map((outcome) => {
+            const isActive = logistics.desiredOutcomes.includes(outcome)
+            return (
+              <button
+                key={outcome}
+                onClick={() => toggleOutcome(outcome)}
+                className={`rounded-full px-5 py-2.5 text-xs font-bold tracking-wider transition-all duration-300 ${
+                  isActive
+                    ? 'bg-[#1A1A1A] text-white'
+                    : 'text-[#1A1A1A]/25 hover:text-[#1A1A1A]/50 bg-white/10'
+                }`}
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+              >
+                {outcome.toUpperCase()}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* On Camera People */}
       <div>
         <h3 className="title-caps-md text-[#1A1A1A] mb-2">ON CAMERA</h3>
@@ -803,8 +871,6 @@ function VideoStyleTab() {
         </div>
       </div>
 
-      {/* 4. Voice Guardrails */}
-      <VoiceGuardrailsSection />
 
     </div>
   )
