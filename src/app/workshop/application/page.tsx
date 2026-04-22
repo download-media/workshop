@@ -16,7 +16,7 @@ import type { ContentPillar, CampaignIdea } from '@/lib/types'
    ──────────────────────────────────────────────────────────── */
 
 const TABS = [
-  { id: 'logistics', label: 'Logistics' },
+  { id: 'logistics', label: 'Content' },
   { id: 'video', label: 'Video Style' },
   { id: 'pillars', label: 'Content Pillars' },
   { id: 'campaign', label: 'Campaign Ideation' },
@@ -209,6 +209,53 @@ function LogisticsTab() {
               onChange={(e) => setLogistics({ otherFormats: e.target.value })}
               placeholder="e.g. Stories 10%, static posts, polls"
               className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Story Strategy */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">STORY STRATEGY</h3>
+        <p className="text-sm text-[#2E2E2E] mb-4">How should stories be used? Daily cadence, recurring formats, behind the scenes approach.</p>
+        <Textarea
+          value={logistics.storyStrategy}
+          onChange={(e) => setLogistics({ storyStrategy: e.target.value })}
+          placeholder="e.g. 3 to 5 stories per day on shoot days. Mix of BTS clips, polls, and reposts. Always show faces. Use the close friends list for early access content."
+          className="min-h-[100px] bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25 resize-none"
+        />
+      </div>
+
+      {/* Meta Ads */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">META ADS</h3>
+        <p className="text-sm text-[#2E2E2E] mb-4">Paid media details if applicable.</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">MONTHLY BUDGET</label>
+            <Input
+              value={logistics.metaAdsBudget}
+              onChange={(e) => setLogistics({ metaAdsBudget: e.target.value })}
+              placeholder="e.g. $2,000/mo"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">PRIMARY GOAL</label>
+            <Input
+              value={logistics.metaAdsGoal}
+              onChange={(e) => setLogistics({ metaAdsGoal: e.target.value })}
+              placeholder="e.g. Lead gen, brand awareness, website traffic"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+          <div className="liquid-glass rounded-2xl p-5 col-span-2">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">NOTES</label>
+            <Textarea
+              value={logistics.metaAdsNotes}
+              onChange={(e) => setLogistics({ metaAdsNotes: e.target.value })}
+              placeholder="e.g. Previous campaigns, target audiences, landing pages, pixel setup, retargeting segments"
+              className="min-h-[80px] bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25 resize-none"
             />
           </div>
         </div>
