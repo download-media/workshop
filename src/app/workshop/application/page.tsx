@@ -17,8 +17,8 @@ import type { ContentPillar, CampaignIdea } from '@/lib/types'
 
 const TABS = [
   { id: 'logistics', label: 'Logistics' },
-  { id: 'pillars', label: 'Content Pillars' },
   { id: 'video', label: 'Video Style' },
+  { id: 'pillars', label: 'Content Pillars' },
   { id: 'campaign', label: 'Campaign Ideation' },
 ] as const
 
@@ -512,57 +512,201 @@ function ContentPillarsTab() {
    ──────────────────────────────────────────────────────────── */
 
 function VideoStyleTab() {
-  const { videoStyles, updateVideoStyle } = useWorkshopStore()
+  const { videoStyles, updateVideoStyle, shotIdeas, addShotIdea, removeShotIdea, contentHooks, addContentHook, removeContentHook } = useWorkshopStore()
+  const [shotInput, setShotInput] = useState({ description: '', style: '', pillar: '' })
+  const [hookInput, setHookInput] = useState({ hook: '', format: '' })
 
   return (
-    <div>
-      <p className="mb-6 text-sm" style={{ color: '#6A7A8A' }}>
-        Rate each video style based on how well it fits your brand.
-      </p>
+    <div className="flex flex-col gap-12">
+      {/* Style Ratings */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">STYLE FIT</h3>
+        <p className="text-sm text-[#2E2E2E] mb-6">
+          Rate each style 1 to 5 based on how well it fits this brand. Click to rate, click again to clear.
+        </p>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {videoStyles.map((style, idx) => (
-          <motion.div
-            key={style.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.06 }}
-            className="liquid-glass group rounded-2xl p-5 transition-colors hover:bg-white/30"
-          >
-            <div className="mb-4">
-              <span className="text-sm font-semibold" style={{ color: '#1A1A1A' }}>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {videoStyles.map((style, idx) => (
+            <motion.div
+              key={style.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.04 }}
+              className="liquid-glass rounded-2xl p-5 transition-colors hover:bg-white/30"
+            >
+              <span className="text-sm font-semibold text-[#1A1A1A] block mb-3">
                 {style.style}
               </span>
-            </div>
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5].map((val) => {
+                  const isActive = val <= style.rating
+                  return (
+                    <button
+                      key={val}
+                      onClick={() => updateVideoStyle(style.id, val === style.rating ? 0 : val)}
+                      className="flex h-7 w-7 items-center justify-center"
+                    >
+                      <motion.div
+                        className="h-4 w-4 rounded-full"
+                        animate={{
+                          scale: isActive ? 1 : 0.7,
+                          backgroundColor: isActive ? '#4A8AC2' : 'rgba(0,0,0,0.08)',
+                        }}
+                        whileHover={{ scale: 1.15 }}
+                      />
+                    </button>
+                  )
+                })}
+                <span className="ml-1 text-xs text-[#6A7A8A]">
+                  {style.rating > 0 ? `${style.rating}/5` : ''}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
 
-            {/* Rating dots */}
-            <div className="flex items-center gap-2">
-              {[1, 2, 3, 4, 5].map((val) => {
-                const isActive = val <= style.rating
-                return (
-                  <button
-                    key={val}
-                    onClick={() => updateVideoStyle(style.id, val === style.rating ? 0 : val)}
-                    className="group/dot relative flex h-8 w-8 items-center justify-center"
-                    aria-label={`Rate ${style.style} ${val} of 5`}
-                  >
-                    <motion.div
-                      className="h-4 w-4 rounded-full transition-all"
-                      animate={{
-                        scale: isActive ? 1 : 0.75,
-                        backgroundColor: isActive ? '#4A8AC2' : 'rgba(0,0,0,0.08)',
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                    />
-                  </button>
-                )
-              })}
-              <span className="ml-2 text-xs" style={{ color: '#6A7A8A' }}>
-                {style.rating > 0 ? `${style.rating}/5` : '--'}
-              </span>
+      {/* Shot List Starter */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">SHOT LIST</h3>
+        <p className="text-sm text-[#2E2E2E] mb-6">
+          If a crew showed up tomorrow, what would we film? List specific shoot ideas.
+        </p>
+
+        <div className="flex flex-col gap-3 mb-4">
+          {shotIdeas.map((shot) => (
+            <motion.div
+              key={shot.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="liquid-glass rounded-2xl p-4 group flex items-start gap-3"
+            >
+              <div className="flex-1">
+                <p className="text-sm text-[#1A1A1A] font-medium">{shot.description}</p>
+                <div className="flex gap-3 mt-1.5">
+                  {shot.style && <span className="text-xs text-[#4A8AC2]">{shot.style}</span>}
+                  {shot.pillar && <span className="text-xs text-[#6A7A8A]">{shot.pillar}</span>}
+                </div>
+              </div>
+              <button
+                onClick={() => removeShotIdea(shot.id)}
+                className="text-[#1A1A1A]/10 hover:text-[#E85A5A] transition-colors opacity-0 group-hover:opacity-100"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="liquid-glass rounded-2xl p-5">
+          <div className="grid grid-cols-[1fr_auto_auto] gap-3 items-end">
+            <div>
+              <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">WHAT TO FILM</label>
+              <Input
+                value={shotInput.description}
+                onChange={(e) => setShotInput({ ...shotInput, description: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && shotInput.description.trim()) {
+                    addShotIdea({ id: uid(), ...shotInput })
+                    setShotInput({ description: '', style: '', pillar: '' })
+                  }
+                }}
+                placeholder="e.g. Founder walking through the office explaining the mission"
+                className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+              />
             </div>
-          </motion.div>
-        ))}
+            <div>
+              <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">STYLE</label>
+              <Input
+                value={shotInput.style}
+                onChange={(e) => setShotInput({ ...shotInput, style: e.target.value })}
+                placeholder="e.g. Raw"
+                className="h-10 w-32 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+              />
+            </div>
+            <button
+              onClick={() => {
+                if (shotInput.description.trim()) {
+                  addShotIdea({ id: uid(), ...shotInput })
+                  setShotInput({ description: '', style: '', pillar: '' })
+                }
+              }}
+              disabled={!shotInput.description.trim()}
+              className="title-caps-sm h-10 px-4 text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-20"
+            >
+              + ADD
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Content Hooks */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">CONTENT HOOKS</h3>
+        <p className="text-sm text-[#2E2E2E] mb-6">
+          Write the first line. The hook is the only thing that determines if someone watches. Generate as many as possible.
+        </p>
+
+        <div className="flex flex-col gap-2 mb-4">
+          {contentHooks.map((hook) => (
+            <motion.div
+              key={hook.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="liquid-glass rounded-xl p-4 group flex items-center gap-3"
+            >
+              <p className="flex-1 text-sm text-[#1A1A1A] font-medium">"{hook.hook}"</p>
+              {hook.format && <span className="text-xs text-[#4A8AC2] shrink-0">{hook.format}</span>}
+              <button
+                onClick={() => removeContentHook(hook.id)}
+                className="text-[#1A1A1A]/10 hover:text-[#E85A5A] transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="liquid-glass rounded-2xl p-5">
+          <div className="grid grid-cols-[1fr_auto_auto] gap-3 items-end">
+            <div>
+              <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">HOOK</label>
+              <Input
+                value={hookInput.hook}
+                onChange={(e) => setHookInput({ ...hookInput, hook: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && hookInput.hook.trim()) {
+                    addContentHook({ id: uid(), ...hookInput })
+                    setHookInput({ hook: '', format: '' })
+                  }
+                }}
+                placeholder='e.g. "Nobody talks about this part of running a business"'
+                className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+              />
+            </div>
+            <div>
+              <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">FORMAT</label>
+              <Input
+                value={hookInput.format}
+                onChange={(e) => setHookInput({ ...hookInput, format: e.target.value })}
+                placeholder="e.g. Reel"
+                className="h-10 w-28 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+              />
+            </div>
+            <button
+              onClick={() => {
+                if (hookInput.hook.trim()) {
+                  addContentHook({ id: uid(), ...hookInput })
+                  setHookInput({ hook: '', format: '' })
+                }
+              }}
+              disabled={!hookInput.hook.trim()}
+              className="title-caps-sm h-10 px-4 text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-20"
+            >
+              + ADD
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

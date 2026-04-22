@@ -22,6 +22,8 @@ import type {
   PhaseId,
   Logistics,
   OnCameraPerson,
+  ShotIdea,
+  ContentHook,
 } from './types'
 
 interface WorkshopStore {
@@ -86,6 +88,12 @@ interface WorkshopStore {
   removeOnCameraPerson: (id: string) => void
   videoStyles: VideoStyle[]
   updateVideoStyle: (id: string, rating: number) => void
+  shotIdeas: ShotIdea[]
+  addShotIdea: (idea: ShotIdea) => void
+  removeShotIdea: (id: string) => void
+  contentHooks: ContentHook[]
+  addContentHook: (hook: ContentHook) => void
+  removeContentHook: (id: string) => void
   campaignIdeas: CampaignIdea[]
   addCampaignIdea: (idea: CampaignIdea) => void
   updateCampaignIdea: (id: string, data: Partial<CampaignIdea>) => void
@@ -140,6 +148,9 @@ const defaultVideoStyles: VideoStyle[] = [
   { id: 'vs-4', style: 'Day-in-the-Life', rating: 0 },
   { id: 'vs-5', style: 'Motion Graphics', rating: 0 },
   { id: 'vs-6', style: 'Humor-Driven', rating: 0 },
+  { id: 'vs-7', style: 'Creative / Experimental', rating: 0 },
+  { id: 'vs-8', style: 'Educational / How-To', rating: 0 },
+  { id: 'vs-9', style: 'Testimonial / Social Proof', rating: 0 },
 ]
 
 const initialState = {
@@ -172,6 +183,8 @@ const initialState = {
     notes: '',
   } as Logistics,
   videoStyles: defaultVideoStyles,
+  shotIdeas: [] as ShotIdea[],
+  contentHooks: [] as ContentHook[],
   campaignIdeas: [],
   priorities: [],
 }
@@ -235,6 +248,11 @@ export const useWorkshopStore = create<WorkshopStore>()(
       removeOnCameraPerson: (id) => set((s) => ({ logistics: { ...s.logistics, onCameraPeople: s.logistics.onCameraPeople.filter((p) => p.id !== id) } })),
 
       updateVideoStyle: (id, rating) => set((s) => ({ videoStyles: s.videoStyles.map((v) => v.id === id ? { ...v, rating } : v) })),
+
+      addShotIdea: (idea) => set((s) => ({ shotIdeas: [...s.shotIdeas, idea] })),
+      removeShotIdea: (id) => set((s) => ({ shotIdeas: s.shotIdeas.filter((i) => i.id !== id) })),
+      addContentHook: (hook) => set((s) => ({ contentHooks: [...s.contentHooks, hook] })),
+      removeContentHook: (id) => set((s) => ({ contentHooks: s.contentHooks.filter((h) => h.id !== id) })),
 
       addCampaignIdea: (idea) => set((s) => ({ campaignIdeas: [...s.campaignIdeas, idea] })),
       updateCampaignIdea: (id, data) => set((s) => ({ campaignIdeas: s.campaignIdeas.map((i) => i.id === id ? { ...i, ...data } : i) })),
