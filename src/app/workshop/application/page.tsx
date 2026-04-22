@@ -514,12 +514,9 @@ function ContentPillarsTab() {
 const VIDEO_SLIDERS = [
   { id: 'vid-1', left: 'Cinematic', right: 'Documentary' },
   { id: 'vid-2', left: 'Polished', right: 'Raw' },
-  { id: 'vid-3', left: 'Fast', right: 'Slow' },
+  { id: 'vid-3', left: 'Fast Paced', right: 'Slow Paced' },
   { id: 'vid-4', left: 'Scripted', right: 'Spontaneous' },
   { id: 'vid-5', left: 'People Forward', right: 'Work Forward' },
-  { id: 'vid-6', left: 'Platform Native', right: 'Brand Native' },
-  { id: 'vid-7', left: 'Loud', right: 'Quiet' },
-  { id: 'vid-8', left: 'Aspirational', right: 'Relatable' },
 ]
 
 const EMOTION_CLUSTERS = [
@@ -531,17 +528,6 @@ const EMOTION_CLUSTERS = [
   { name: 'EASE', words: ['Calm', 'Simple', 'Effortless', 'Inviting'] },
 ]
 
-const CONTENT_TYPES_FOR_SPECTRUM = [
-  'Stories / Day to Day',
-  'Reels / TikToks',
-  'YouTube',
-  'Website Hero',
-  'Testimonials',
-  'Paid Ads (Cold)',
-  'Paid Ads (Retargeting)',
-  'Recruitment / Culture',
-]
-
 function VideoStyleTab() {
   const { videoStyles, updateVideoStyle } = useWorkshopStore()
   const [videoSliderValues, setVideoSliderValues] = useState<Record<string, number>>(
@@ -549,9 +535,6 @@ function VideoStyleTab() {
   )
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([])
   const [rejectedEmotions, setRejectedEmotions] = useState<string[]>([])
-  const [spectrumValues, setSpectrumValues] = useState<Record<string, number>>(
-    Object.fromEntries(CONTENT_TYPES_FOR_SPECTRUM.map((t) => [t, 50]))
-  )
 
   const toggleEmotion = (word: string) => {
     if (selectedEmotions.includes(word)) {
@@ -698,42 +681,6 @@ function VideoStyleTab() {
         </div>
       </div>
 
-      {/* 4. Production Value Spectrum */}
-      <div>
-        <h3 className="title-caps-md text-[#1A1A1A] mb-2">PRODUCTION SPECTRUM</h3>
-        <p className="text-sm text-[#2E2E2E] mb-6">
-          Different content types need different production levels. Where does each sit for this brand?
-        </p>
-
-        <div className="liquid-glass rounded-2xl p-6">
-          <div className="flex justify-between mb-6">
-            <span className="title-caps-sm text-[#4A8AC2]">RAW / LO FI</span>
-            <span className="title-caps-sm text-[#E8855A]">POLISHED / CINEMATIC</span>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {CONTENT_TYPES_FOR_SPECTRUM.map((type) => (
-              <div key={type} className="flex items-center gap-4">
-                <span className="text-xs text-[#1A1A1A] w-40 shrink-0 text-right">{type}</span>
-                <div className="relative flex-1 h-8 flex items-center">
-                  <div className="absolute inset-x-0 h-1.5 rounded-full" style={{ background: 'linear-gradient(to right, #4A8AC2, #E8855A)', opacity: 0.15 }} />
-                  <input
-                    type="range" min={0} max={100}
-                    value={spectrumValues[type]}
-                    onChange={(e) => setSpectrumValues({ ...spectrumValues, [type]: Number(e.target.value) })}
-                    className="absolute inset-x-0 w-full h-2 appearance-none bg-transparent cursor-pointer
-                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full
-                      [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-[#1A1A1A]/15
-                      [&::-webkit-slider-thumb]:shadow-[0_1px_4px_rgba(0,0,0,0.15)] [&::-webkit-slider-thumb]:cursor-grab
-                      [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white
-                      [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-[#1A1A1A]/15 [&::-moz-range-track]:bg-transparent"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
