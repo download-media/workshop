@@ -180,7 +180,7 @@ function LogisticsTab() {
             <Input
               value={logistics.shootFrequency}
               onChange={(e) => setLogistics({ shootFrequency: e.target.value })}
-              placeholder="e.g. 1 day per month"
+              placeholder="e.g. 6 hours per 3 months"
               className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
             />
           </div>
@@ -208,6 +208,42 @@ function LogisticsTab() {
               value={logistics.otherFormats}
               onChange={(e) => setLogistics({ otherFormats: e.target.value })}
               placeholder="e.g. Stories 10%, static posts, polls"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Point of Contact */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">POINT OF CONTACT</h3>
+        <p className="text-sm text-[#2E2E2E] mb-6">Who do we coordinate with on the client side?</p>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">NAME</label>
+            <Input
+              value={logistics.pointOfContact}
+              onChange={(e) => setLogistics({ pointOfContact: e.target.value })}
+              placeholder="e.g. Sarah Kim"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">PREFERRED PLATFORM</label>
+            <Input
+              value={logistics.contactPlatform}
+              onChange={(e) => setLogistics({ contactPlatform: e.target.value })}
+              placeholder="e.g. Slack, email, iMessage"
+              className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
+            />
+          </div>
+          <div className="liquid-glass rounded-2xl p-5">
+            <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">AVAILABILITY</label>
+            <Input
+              value={logistics.contactAvailability}
+              onChange={(e) => setLogistics({ contactAvailability: e.target.value })}
+              placeholder="e.g. whenever, work hours only"
               className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
             />
           </div>

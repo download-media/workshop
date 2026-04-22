@@ -116,6 +116,9 @@ export interface Logistics {
   carouselPercentage: string
   otherFormats: string
   shootFrequency: string
+  pointOfContact: string
+  contactPlatform: string
+  contactAvailability: string
   notes: string
 }
 
