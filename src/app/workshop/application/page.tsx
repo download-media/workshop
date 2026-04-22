@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, X, Trash2, ChevronUp } from 'lucide-react'
 import { useWorkshopStore } from '@/lib/store'
@@ -17,7 +17,7 @@ import type { ContentPillar, CampaignIdea } from '@/lib/types'
 
 const TABS = [
   { id: 'logistics', label: 'Content' },
-  { id: 'video', label: 'Video Style' },
+  { id: 'video', label: 'Creative Direction' },
   { id: 'pillars', label: 'Content Pillars' },
   { id: 'campaign', label: 'Campaign Ideation' },
 ] as const
@@ -558,12 +558,87 @@ function ContentPillarsTab() {
    Video Style Tab
    ──────────────────────────────────────────────────────────── */
 
+/* ────────────────────────────────────────────────────────────
+   Voice Guardrails (moved from Identity)
+   ──────────────────────────────────────────────────────────── */
+
+function VoiceGuardrailsSection() {
+  const { voiceGuardrails, addVoiceGuardrail, updateVoiceGuardrail, removeVoiceGuardrail } = useWorkshopStore()
+
+  useEffect(() => {
+    if (voiceGuardrails.length === 0) {
+      const defaults = [
+        { positive: 'Confident', negative: 'Arrogant' },
+        { positive: 'Casual', negative: 'Sloppy' },
+        { positive: 'Bold', negative: 'Offensive' },
+      ]
+      defaults.forEach((g, i) => {
+        addVoiceGuardrail({ id: `vg-default-${i}`, ...g })
+      })
+    }
+  }, [])
+
+  return (
+    <div>
+      <h3 className="title-caps-md text-[#1A1A1A] mb-2">VOICE GUARDRAILS</h3>
+      <p className="text-sm text-[#2E2E2E] mb-6">
+        What the brand voice is and what it never becomes. These are the rules for how content sounds.
+      </p>
+
+      <div className="flex flex-col gap-3 mb-4">
+        {voiceGuardrails.map((g) => (
+          <motion.div
+            key={g.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="liquid-glass rounded-2xl p-4 flex items-center gap-3 group"
+          >
+            <div className="flex-1 flex items-center gap-3">
+              <Input
+                value={g.positive}
+                onChange={(e) => updateVoiceGuardrail(g.id, { positive: e.target.value })}
+                placeholder="We are..."
+                className="h-10 bg-white/20 border-[#2E5E8C]/15 text-[#1A1A1A] font-medium placeholder:text-[#1A1A1A]/25"
+              />
+              <span className="text-sm text-[#6A7A8A] shrink-0">but not</span>
+              <Input
+                value={g.negative}
+                onChange={(e) => updateVoiceGuardrail(g.id, { negative: e.target.value })}
+                placeholder="Never..."
+                className="h-10 bg-white/20 border-[#E85A5A]/15 text-[#1A1A1A] font-medium placeholder:text-[#1A1A1A]/25"
+              />
+            </div>
+            <button
+              onClick={() => removeVoiceGuardrail(g.id)}
+              className="text-[#1A1A1A]/10 hover:text-[#E85A5A] transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        ))}
+      </div>
+
+      <button
+        onClick={() => addVoiceGuardrail({ id: uid(), positive: '', negative: '' })}
+        className="w-full rounded-2xl border border-dashed border-white/25 bg-white/8 py-3 transition-all hover:border-white/40 hover:bg-white/12"
+      >
+        <span className="title-caps-sm text-[#1A1A1A]/40">+ ADD GUARDRAIL</span>
+      </button>
+    </div>
+  )
+}
+
+/* ────────────────────────────────────────────────────────────
+   Creative Direction Tab
+   ──────────────────────────────────────────────────────────── */
+
 const VIDEO_SLIDERS = [
-  { id: 'vid-1', left: 'Cinematic', right: 'Documentary' },
-  { id: 'vid-2', left: 'Polished', right: 'Raw' },
-  { id: 'vid-3', left: 'Fast Paced', right: 'Slow Paced' },
-  { id: 'vid-4', left: 'Scripted', right: 'Spontaneous' },
-  { id: 'vid-5', left: 'People Forward', right: 'Work Forward' },
+  { id: 'vid-1', left: 'Educational', right: 'Entertaining' },
+  { id: 'vid-2', left: 'Cinematic', right: 'Documentary' },
+  { id: 'vid-3', left: 'Polished', right: 'Raw' },
+  { id: 'vid-4', left: 'Fast Paced', right: 'Slow Paced' },
+  { id: 'vid-5', left: 'Scripted', right: 'Spontaneous' },
+  { id: 'vid-6', left: 'People Forward', right: 'Work Forward' },
 ]
 
 const EMOTION_CLUSTERS = [
@@ -691,7 +766,7 @@ function VideoStyleTab() {
           Pick the 5 emotions your video content should trigger. Then pick 3 it should never trigger.
         </p>
         <p className="text-xs text-[#6A7A8A] mb-6">
-          Click to select. Right click or long press to reject.
+          Click to select. Double click to reject.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -706,7 +781,7 @@ function VideoStyleTab() {
                     <button
                       key={word}
                       onClick={() => toggleEmotion(word)}
-                      onContextMenu={(e) => { e.preventDefault(); toggleReject(word) }}
+                      onDoubleClick={() => toggleReject(word)}
                       className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 ${
                         isSelected ? 'bg-[#2E5E8C] text-white'
                         : isRejected ? 'bg-[#E85A5A]/15 text-[#E85A5A] line-through'
@@ -727,6 +802,9 @@ function VideoStyleTab() {
           <span>{rejectedEmotions.length}/3 rejected</span>
         </div>
       </div>
+
+      {/* 4. Voice Guardrails */}
+      <VoiceGuardrailsSection />
 
     </div>
   )
@@ -899,12 +977,12 @@ function CampaignIdeationTab() {
    ──────────────────────────────────────────────────────────── */
 
 export default function ApplicationPage() {
-  const [activeTab, setActiveTab] = useState<TabId>('pillars')
+  const [activeTab, setActiveTab] = useState<TabId>('logistics')
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PhaseHeader
-        number={5}
+        number={4}
         title="Application"
         subtitle="What do we build"
         color="#4A8AC2"

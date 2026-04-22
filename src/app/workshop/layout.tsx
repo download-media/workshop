@@ -44,7 +44,6 @@ const PHASE_IMAGES: Record<string, string> = {
   foundation: '/images/frosted-cloud.jpeg',
   audience: '/images/clouds-portrait.jpeg',
   position: '/images/bokeh-light.jpeg',
-  identity: '/images/cloud-cutouts.jpeg',
   application: '/images/frosted-cloud.jpeg',
   priorities: '/images/cloud-cutouts.jpeg',
 }

@@ -265,7 +265,7 @@ export default function PrioritiesPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PhaseHeader
-        number={6}
+        number={5}
         title="Priorities"
         subtitle="What matters first"
         color="#4A8AC2"
