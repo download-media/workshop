@@ -511,200 +511,226 @@ function ContentPillarsTab() {
    Video Style Tab
    ──────────────────────────────────────────────────────────── */
 
+const VIDEO_SLIDERS = [
+  { id: 'vid-1', left: 'Cinematic', right: 'Documentary' },
+  { id: 'vid-2', left: 'Polished', right: 'Raw' },
+  { id: 'vid-3', left: 'Fast', right: 'Slow' },
+  { id: 'vid-4', left: 'Scripted', right: 'Spontaneous' },
+  { id: 'vid-5', left: 'People Forward', right: 'Work Forward' },
+  { id: 'vid-6', left: 'Platform Native', right: 'Brand Native' },
+  { id: 'vid-7', left: 'Loud', right: 'Quiet' },
+  { id: 'vid-8', left: 'Aspirational', right: 'Relatable' },
+]
+
+const EMOTION_CLUSTERS = [
+  { name: 'TRUST', words: ['Reliable', 'Warm', 'Safe', 'Grounded'] },
+  { name: 'ENERGY', words: ['Exciting', 'Bold', 'Urgent', 'Electric'] },
+  { name: 'WONDER', words: ['Inspiring', 'Curious', 'Surprising', 'Elevated'] },
+  { name: 'INTIMACY', words: ['Authentic', 'Vulnerable', 'Personal', 'Human'] },
+  { name: 'AUTHORITY', words: ['Confident', 'Expert', 'Commanding', 'Sharp'] },
+  { name: 'EASE', words: ['Calm', 'Simple', 'Effortless', 'Inviting'] },
+]
+
+const CONTENT_TYPES_FOR_SPECTRUM = [
+  'Stories / Day to Day',
+  'Reels / TikToks',
+  'YouTube',
+  'Website Hero',
+  'Testimonials',
+  'Paid Ads (Cold)',
+  'Paid Ads (Retargeting)',
+  'Recruitment / Culture',
+]
+
 function VideoStyleTab() {
-  const { videoStyles, updateVideoStyle, shotIdeas, addShotIdea, removeShotIdea, contentHooks, addContentHook, removeContentHook } = useWorkshopStore()
-  const [shotInput, setShotInput] = useState({ description: '', style: '', pillar: '' })
-  const [hookInput, setHookInput] = useState({ hook: '', format: '' })
+  const { videoStyles, updateVideoStyle } = useWorkshopStore()
+  const [videoSliderValues, setVideoSliderValues] = useState<Record<string, number>>(
+    Object.fromEntries(VIDEO_SLIDERS.map((s) => [s.id, 50]))
+  )
+  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([])
+  const [rejectedEmotions, setRejectedEmotions] = useState<string[]>([])
+  const [spectrumValues, setSpectrumValues] = useState<Record<string, number>>(
+    Object.fromEntries(CONTENT_TYPES_FOR_SPECTRUM.map((t) => [t, 50]))
+  )
+
+  const toggleEmotion = (word: string) => {
+    if (selectedEmotions.includes(word)) {
+      setSelectedEmotions(selectedEmotions.filter((w) => w !== word))
+    } else if (rejectedEmotions.includes(word)) {
+      setRejectedEmotions(rejectedEmotions.filter((w) => w !== word))
+    } else if (selectedEmotions.length < 5) {
+      setSelectedEmotions([...selectedEmotions, word])
+    }
+  }
+
+  const toggleReject = (word: string) => {
+    if (rejectedEmotions.includes(word)) {
+      setRejectedEmotions(rejectedEmotions.filter((w) => w !== word))
+    } else if (selectedEmotions.includes(word)) {
+      setSelectedEmotions(selectedEmotions.filter((w) => w !== word))
+      setRejectedEmotions([...rejectedEmotions, word])
+    } else if (rejectedEmotions.length < 3) {
+      setRejectedEmotions([...rejectedEmotions, word])
+    }
+  }
 
   return (
-    <div className="flex flex-col gap-12">
-      {/* Style Ratings */}
+    <div className="flex flex-col gap-14">
+      {/* 1. Style Fit Ratings */}
       <div>
         <h3 className="title-caps-md text-[#1A1A1A] mb-2">STYLE FIT</h3>
         <p className="text-sm text-[#2E2E2E] mb-6">
-          Rate each style 1 to 5 based on how well it fits this brand. Click to rate, click again to clear.
+          Rate each production style. How much does it feel like this brand?
         </p>
-
         <div className="grid gap-3 sm:grid-cols-3">
           {videoStyles.map((style, idx) => (
             <motion.div
               key={style.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.04 }}
+              transition={{ delay: idx * 0.03 }}
               className="liquid-glass rounded-2xl p-5 transition-colors hover:bg-white/30"
             >
-              <span className="text-sm font-semibold text-[#1A1A1A] block mb-3">
-                {style.style}
-              </span>
+              <span className="text-sm font-semibold text-[#1A1A1A] block mb-3">{style.style}</span>
               <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map((val) => {
-                  const isActive = val <= style.rating
+                {[1, 2, 3, 4, 5].map((val) => (
+                  <button
+                    key={val}
+                    onClick={() => updateVideoStyle(style.id, val === style.rating ? 0 : val)}
+                    className="flex h-7 w-7 items-center justify-center"
+                  >
+                    <motion.div
+                      className="h-4 w-4 rounded-full"
+                      animate={{
+                        scale: val <= style.rating ? 1 : 0.7,
+                        backgroundColor: val <= style.rating ? '#4A8AC2' : 'rgba(0,0,0,0.08)',
+                      }}
+                      whileHover={{ scale: 1.15 }}
+                    />
+                  </button>
+                ))}
+                {style.rating > 0 && <span className="ml-1 text-xs text-[#6A7A8A]">{style.rating}/5</span>}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* 2. Video Personality Sliders */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">VIDEO DIRECTION</h3>
+        <p className="text-sm text-[#2E2E2E] mb-6">
+          Where does this brand sit on each spectrum? This defines how every piece of video content should feel.
+        </p>
+        <div className="flex flex-col gap-5">
+          {VIDEO_SLIDERS.map((slider) => (
+            <div key={slider.id}>
+              <div className="relative flex items-center justify-between mb-3">
+                <span className="title-caps-sm text-[#1A1A1A]">{slider.left}</span>
+                <span className="absolute left-1/2 -translate-x-1/2 text-xs font-mono text-[#1A1A1A] tabular-nums liquid-glass rounded-full px-3 py-1">
+                  {videoSliderValues[slider.id]}
+                </span>
+                <span className="title-caps-sm text-[#1A1A1A]">{slider.right}</span>
+              </div>
+              <div className="relative h-10 flex items-center">
+                <div className="absolute inset-x-0 h-2 rounded-full overflow-hidden">
+                  <div className="h-full w-full" style={{ background: 'linear-gradient(to right, #4A8AC2, #E8855A)', opacity: 0.2 }} />
+                </div>
+                <div className="absolute h-2 rounded-full" style={{ left: 0, width: `${videoSliderValues[slider.id]}%`, background: 'linear-gradient(to right, #4A8AC2, #E8855A)', opacity: 0.5 }} />
+                <input
+                  type="range" min={0} max={100}
+                  value={videoSliderValues[slider.id]}
+                  onChange={(e) => setVideoSliderValues({ ...videoSliderValues, [slider.id]: Number(e.target.value) })}
+                  className="absolute inset-x-0 w-full h-2 appearance-none bg-transparent cursor-pointer
+                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:rounded-full
+                    [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white/80
+                    [&::-webkit-slider-thumb]:shadow-[0_2px_8px_rgba(0,0,0,0.15)] [&::-webkit-slider-thumb]:cursor-grab
+                    [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white
+                    [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white/80 [&::-moz-range-track]:bg-transparent"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Emotion Mapping */}
+      <div>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">EMOTION TARGET</h3>
+        <p className="text-sm text-[#2E2E2E] mb-2">
+          Pick the 5 emotions your video content should trigger. Then pick 3 it should never trigger.
+        </p>
+        <p className="text-xs text-[#6A7A8A] mb-6">
+          Click to select. Right click or long press to reject.
+        </p>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {EMOTION_CLUSTERS.map((cluster) => (
+            <div key={cluster.name} className="liquid-glass rounded-2xl p-5">
+              <span className="title-caps-sm text-[#6A7A8A] block mb-3">{cluster.name}</span>
+              <div className="flex flex-wrap gap-2">
+                {cluster.words.map((word) => {
+                  const isSelected = selectedEmotions.includes(word)
+                  const isRejected = rejectedEmotions.includes(word)
                   return (
                     <button
-                      key={val}
-                      onClick={() => updateVideoStyle(style.id, val === style.rating ? 0 : val)}
-                      className="flex h-7 w-7 items-center justify-center"
+                      key={word}
+                      onClick={() => toggleEmotion(word)}
+                      onContextMenu={(e) => { e.preventDefault(); toggleReject(word) }}
+                      className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 ${
+                        isSelected ? 'bg-[#2E5E8C] text-white'
+                        : isRejected ? 'bg-[#E85A5A]/15 text-[#E85A5A] line-through'
+                        : 'bg-white/20 text-[#1A1A1A]/50 hover:text-[#1A1A1A]/80'
+                      }`}
                     >
-                      <motion.div
-                        className="h-4 w-4 rounded-full"
-                        animate={{
-                          scale: isActive ? 1 : 0.7,
-                          backgroundColor: isActive ? '#4A8AC2' : 'rgba(0,0,0,0.08)',
-                        }}
-                        whileHover={{ scale: 1.15 }}
-                      />
+                      {word}
                     </button>
                   )
                 })}
-                <span className="ml-1 text-xs text-[#6A7A8A]">
-                  {style.rating > 0 ? `${style.rating}/5` : ''}
-                </span>
               </div>
-            </motion.div>
+            </div>
           ))}
+        </div>
+
+        <div className="mt-4 flex items-center gap-6 text-xs text-[#6A7A8A]">
+          <span>{selectedEmotions.length}/5 selected</span>
+          <span>{rejectedEmotions.length}/3 rejected</span>
         </div>
       </div>
 
-      {/* Shot List Starter */}
+      {/* 4. Production Value Spectrum */}
       <div>
-        <h3 className="title-caps-md text-[#1A1A1A] mb-2">SHOT LIST</h3>
+        <h3 className="title-caps-md text-[#1A1A1A] mb-2">PRODUCTION SPECTRUM</h3>
         <p className="text-sm text-[#2E2E2E] mb-6">
-          If a crew showed up tomorrow, what would we film? List specific shoot ideas.
+          Different content types need different production levels. Where does each sit for this brand?
         </p>
 
-        <div className="flex flex-col gap-3 mb-4">
-          {shotIdeas.map((shot) => (
-            <motion.div
-              key={shot.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="liquid-glass rounded-2xl p-4 group flex items-start gap-3"
-            >
-              <div className="flex-1">
-                <p className="text-sm text-[#1A1A1A] font-medium">{shot.description}</p>
-                <div className="flex gap-3 mt-1.5">
-                  {shot.style && <span className="text-xs text-[#4A8AC2]">{shot.style}</span>}
-                  {shot.pillar && <span className="text-xs text-[#6A7A8A]">{shot.pillar}</span>}
+        <div className="liquid-glass rounded-2xl p-6">
+          <div className="flex justify-between mb-6">
+            <span className="title-caps-sm text-[#4A8AC2]">RAW / LO FI</span>
+            <span className="title-caps-sm text-[#E8855A]">POLISHED / CINEMATIC</span>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {CONTENT_TYPES_FOR_SPECTRUM.map((type) => (
+              <div key={type} className="flex items-center gap-4">
+                <span className="text-xs text-[#1A1A1A] w-40 shrink-0 text-right">{type}</span>
+                <div className="relative flex-1 h-8 flex items-center">
+                  <div className="absolute inset-x-0 h-1.5 rounded-full" style={{ background: 'linear-gradient(to right, #4A8AC2, #E8855A)', opacity: 0.15 }} />
+                  <input
+                    type="range" min={0} max={100}
+                    value={spectrumValues[type]}
+                    onChange={(e) => setSpectrumValues({ ...spectrumValues, [type]: Number(e.target.value) })}
+                    className="absolute inset-x-0 w-full h-2 appearance-none bg-transparent cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-[#1A1A1A]/15
+                      [&::-webkit-slider-thumb]:shadow-[0_1px_4px_rgba(0,0,0,0.15)] [&::-webkit-slider-thumb]:cursor-grab
+                      [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white
+                      [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-[#1A1A1A]/15 [&::-moz-range-track]:bg-transparent"
+                  />
                 </div>
               </div>
-              <button
-                onClick={() => removeShotIdea(shot.id)}
-                className="text-[#1A1A1A]/10 hover:text-[#E85A5A] transition-colors opacity-0 group-hover:opacity-100"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="liquid-glass rounded-2xl p-5">
-          <div className="grid grid-cols-[1fr_auto_auto] gap-3 items-end">
-            <div>
-              <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">WHAT TO FILM</label>
-              <Input
-                value={shotInput.description}
-                onChange={(e) => setShotInput({ ...shotInput, description: e.target.value })}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && shotInput.description.trim()) {
-                    addShotIdea({ id: uid(), ...shotInput })
-                    setShotInput({ description: '', style: '', pillar: '' })
-                  }
-                }}
-                placeholder="e.g. Founder walking through the office explaining the mission"
-                className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
-              />
-            </div>
-            <div>
-              <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">STYLE</label>
-              <Input
-                value={shotInput.style}
-                onChange={(e) => setShotInput({ ...shotInput, style: e.target.value })}
-                placeholder="e.g. Raw"
-                className="h-10 w-32 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
-              />
-            </div>
-            <button
-              onClick={() => {
-                if (shotInput.description.trim()) {
-                  addShotIdea({ id: uid(), ...shotInput })
-                  setShotInput({ description: '', style: '', pillar: '' })
-                }
-              }}
-              disabled={!shotInput.description.trim()}
-              className="title-caps-sm h-10 px-4 text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-20"
-            >
-              + ADD
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Content Hooks */}
-      <div>
-        <h3 className="title-caps-md text-[#1A1A1A] mb-2">CONTENT HOOKS</h3>
-        <p className="text-sm text-[#2E2E2E] mb-6">
-          Write the first line. The hook is the only thing that determines if someone watches. Generate as many as possible.
-        </p>
-
-        <div className="flex flex-col gap-2 mb-4">
-          {contentHooks.map((hook) => (
-            <motion.div
-              key={hook.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="liquid-glass rounded-xl p-4 group flex items-center gap-3"
-            >
-              <p className="flex-1 text-sm text-[#1A1A1A] font-medium">"{hook.hook}"</p>
-              {hook.format && <span className="text-xs text-[#4A8AC2] shrink-0">{hook.format}</span>}
-              <button
-                onClick={() => removeContentHook(hook.id)}
-                className="text-[#1A1A1A]/10 hover:text-[#E85A5A] transition-colors opacity-0 group-hover:opacity-100 shrink-0"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="liquid-glass rounded-2xl p-5">
-          <div className="grid grid-cols-[1fr_auto_auto] gap-3 items-end">
-            <div>
-              <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">HOOK</label>
-              <Input
-                value={hookInput.hook}
-                onChange={(e) => setHookInput({ ...hookInput, hook: e.target.value })}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && hookInput.hook.trim()) {
-                    addContentHook({ id: uid(), ...hookInput })
-                    setHookInput({ hook: '', format: '' })
-                  }
-                }}
-                placeholder='e.g. "Nobody talks about this part of running a business"'
-                className="h-10 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
-              />
-            </div>
-            <div>
-              <label className="title-caps-sm text-[#1A1A1A]/40 mb-2 block">FORMAT</label>
-              <Input
-                value={hookInput.format}
-                onChange={(e) => setHookInput({ ...hookInput, format: e.target.value })}
-                placeholder="e.g. Reel"
-                className="h-10 w-28 bg-white/20 border-white/30 text-[#1A1A1A] placeholder:text-[#1A1A1A]/25"
-              />
-            </div>
-            <button
-              onClick={() => {
-                if (hookInput.hook.trim()) {
-                  addContentHook({ id: uid(), ...hookInput })
-                  setHookInput({ hook: '', format: '' })
-                }
-              }}
-              disabled={!hookInput.hook.trim()}
-              className="title-caps-sm h-10 px-4 text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors disabled:opacity-20"
-            >
-              + ADD
-            </button>
+            ))}
           </div>
         </div>
       </div>
