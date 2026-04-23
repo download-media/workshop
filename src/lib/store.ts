@@ -22,8 +22,6 @@ import type {
   PhaseId,
   Logistics,
   OnCameraPerson,
-  ShotIdea,
-  ContentHook,
 } from './types'
 
 interface WorkshopStore {
@@ -88,12 +86,6 @@ interface WorkshopStore {
   removeOnCameraPerson: (id: string) => void
   videoStyles: VideoStyle[]
   updateVideoStyle: (id: string, rating: number) => void
-  shotIdeas: ShotIdea[]
-  addShotIdea: (idea: ShotIdea) => void
-  removeShotIdea: (id: string) => void
-  contentHooks: ContentHook[]
-  addContentHook: (hook: ContentHook) => void
-  removeContentHook: (id: string) => void
   campaignIdeas: CampaignIdea[]
   addCampaignIdea: (idea: CampaignIdea) => void
   updateCampaignIdea: (id: string, data: Partial<CampaignIdea>) => void
@@ -190,8 +182,6 @@ const initialState = {
     notes: '',
   } as Logistics,
   videoStyles: defaultVideoStyles,
-  shotIdeas: [] as ShotIdea[],
-  contentHooks: [] as ContentHook[],
   campaignIdeas: [],
   priorities: [],
 }
@@ -256,10 +246,6 @@ export const useWorkshopStore = create<WorkshopStore>()(
 
       updateVideoStyle: (id, rating) => set((s) => ({ videoStyles: s.videoStyles.map((v) => v.id === id ? { ...v, rating } : v) })),
 
-      addShotIdea: (idea) => set((s) => ({ shotIdeas: [...s.shotIdeas, idea] })),
-      removeShotIdea: (id) => set((s) => ({ shotIdeas: s.shotIdeas.filter((i) => i.id !== id) })),
-      addContentHook: (hook) => set((s) => ({ contentHooks: [...s.contentHooks, hook] })),
-      removeContentHook: (id) => set((s) => ({ contentHooks: s.contentHooks.filter((h) => h.id !== id) })),
 
       addCampaignIdea: (idea) => set((s) => ({ campaignIdeas: [...s.campaignIdeas, idea] })),
       updateCampaignIdea: (id, data) => set((s) => ({ campaignIdeas: s.campaignIdeas.map((i) => i.id === id ? { ...i, ...data } : i) })),

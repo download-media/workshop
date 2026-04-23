@@ -145,10 +145,6 @@ export default function SummaryPage() {
         competitors: store.competitors,
         landscapePositions: store.landscapePositions,
         landscapeAxes: store.landscapeAxes,
-        voiceAttributes: store.voiceAttributes.filter(a => a.category !== 'torn'),
-        personalitySliders: store.personalitySliders,
-        voiceGuardrails: store.voiceGuardrails,
-        toneDimensions: store.toneDimensions,
         contentPillars: store.contentPillars,
         platformStrategies: store.platformStrategies,
         videoStyles: store.videoStyles,
@@ -176,8 +172,6 @@ export default function SummaryPage() {
 
   const sortedAudiences = [...store.audiences].sort((a, b) => a.rank - b.rank)
   const sortedPriorities = [...store.priorities].sort((a, b) => b.votes - a.votes)
-  const weAre = store.voiceAttributes.filter((a) => a.category === 'we-are')
-  const weAreNot = store.voiceAttributes.filter((a) => a.category === 'we-are-not')
 
   return (
     <>
@@ -501,171 +495,7 @@ export default function SummaryPage() {
             )}
           </SectionWrapper>
 
-          {/* ── Phase 4: Identity ───────────────────────────── */}
-          <SectionWrapper title="Identity" delay={0.2}>
-            <div className="space-y-6">
-              {/* Voice Attributes */}
-              {(weAre.length > 0 || weAreNot.length > 0) && (
-                <div>
-                  <h3 className="mb-3 title-caps-sm" style={{ color: '#6A7A8A' }}>
-                    Voice Attributes
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-xs font-medium" style={{ color: '#2E5E8C' }}>We Are</span>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {weAre.map((attr) => (
-                          <span
-                            key={attr.id}
-                            className="rounded-full px-2.5 py-1 text-xs"
-                            style={{ backgroundColor: 'rgba(46,94,140,0.1)', color: '#2E5E8C' }}
-                          >
-                            {attr.word}
-                          </span>
-                        ))}
-                        {weAre.length === 0 && (
-                          <span className="text-xs" style={{ color: '#6A7A8A' }}>None selected</span>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-xs font-medium" style={{ color: '#E85A5A' }}>We Are Not</span>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {weAreNot.map((attr) => (
-                          <span
-                            key={attr.id}
-                            className="rounded-full px-2.5 py-1 text-xs"
-                            style={{ backgroundColor: 'rgba(232,90,90,0.1)', color: '#E85A5A' }}
-                          >
-                            {attr.word}
-                          </span>
-                        ))}
-                        {weAreNot.length === 0 && (
-                          <span className="text-xs" style={{ color: '#6A7A8A' }}>None selected</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Personality Sliders as horizontal bars */}
-              <div>
-                <h3 className="mb-3 title-caps-sm" style={{ color: '#6A7A8A' }}>
-                  Brand Personality
-                </h3>
-                <div className="space-y-3">
-                  {store.personalitySliders.map((slider) => (
-                    <div key={slider.id} className="flex items-center gap-3">
-                      <span className="w-20 text-right text-xs print:text-gray-500" style={{ color: '#6A7A8A' }}>
-                        {slider.leftLabel}
-                      </span>
-                      <div className="relative h-2 flex-1 overflow-hidden rounded-full print:bg-gray-200" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}>
-                        <motion.div
-                          className="absolute top-0 h-full rounded-full"
-                          style={{
-                            left: 0,
-                            width: `${slider.value}%`,
-                            backgroundColor: '#4A8AC2',
-                          }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${slider.value}%` }}
-                          transition={{ duration: 0.6, delay: 0.1 }}
-                        />
-                        {/* Position indicator */}
-                        <motion.div
-                          className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 print:bg-white print:border-gray-400"
-                          style={{
-                            left: `calc(${slider.value}% - 7px)`,
-                            backgroundColor: '#4A8AC2',
-                            borderColor: '#ffffff',
-                          }}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.4 }}
-                        />
-                      </div>
-                      <span className="w-20 text-xs print:text-gray-500" style={{ color: '#6A7A8A' }}>
-                        {slider.rightLabel}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Voice Guardrails */}
-              {store.voiceGuardrails.length > 0 && (
-                <div>
-                  <h3 className="mb-3 title-caps-sm" style={{ color: '#6A7A8A' }}>
-                    Voice Guardrails
-                  </h3>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {store.voiceGuardrails.map((guardrail) => (
-                      <div
-                        key={guardrail.id}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 print:bg-gray-50"
-                        style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#2E5E8C' }} />
-                            <span className="text-xs font-medium print:text-gray-900" style={{ color: '#2E5E8C' }}>
-                              {guardrail.positive || '--'}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-xs" style={{ color: 'rgba(0,0,0,0.15)' }}>vs</span>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#E85A5A' }} />
-                            <span className="text-xs line-through print:text-gray-500" style={{ color: '#E85A5A' }}>
-                              {guardrail.negative || '--'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tone Dimensions */}
-              {store.toneDimensions.length > 0 && (
-                <div>
-                  <h3 className="mb-3 title-caps-sm" style={{ color: '#6A7A8A' }}>
-                    Tone Dimensions
-                  </h3>
-                  <div className="space-y-2">
-                    {store.toneDimensions.map((dim) => (
-                      <div key={dim.id} className="flex items-center gap-3">
-                        <span className="w-24 text-right text-xs" style={{ color: '#6A7A8A' }}>
-                          {dim.leftLabel}
-                        </span>
-                        <div className="relative flex h-2 flex-1 items-center">
-                          <div className="h-full w-full rounded-full print:bg-gray-200" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }} />
-                          <motion.div
-                            className="absolute h-3 w-3 rounded-full shadow-lg"
-                            style={{
-                              left: `calc(${((dim.value - 1) / 9) * 100}% - 6px)`,
-                              backgroundColor: '#4A8AC2',
-                            }}
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.3 }}
-                          />
-                        </div>
-                        <span className="w-24 text-xs" style={{ color: '#6A7A8A' }}>
-                          {dim.rightLabel}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </SectionWrapper>
-
-          {/* ── Phase 5: Application ───────────────────────── */}
+          {/* ── Phase 4: Application ───────────────────────── */}
           <SectionWrapper title="Application" delay={0.25}>
             <div className="space-y-6">
               {/* Content Pillars with scores */}

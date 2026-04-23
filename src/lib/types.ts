@@ -135,19 +135,6 @@ export interface VideoStyle {
   rating: number
 }
 
-export interface ShotIdea {
-  id: string
-  description: string
-  style: string
-  pillar: string
-}
-
-export interface ContentHook {
-  id: string
-  hook: string
-  format: string
-}
-
 export interface CampaignIdea {
   id: string
   concept: string

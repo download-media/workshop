@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, X, Trash2, ChevronUp } from 'lucide-react'
 import { useWorkshopStore } from '@/lib/store'
@@ -625,76 +625,6 @@ function ContentPillarsTab() {
 /* ────────────────────────────────────────────────────────────
    Video Style Tab
    ──────────────────────────────────────────────────────────── */
-
-/* ────────────────────────────────────────────────────────────
-   Voice Guardrails (moved from Identity)
-   ──────────────────────────────────────────────────────────── */
-
-function VoiceGuardrailsSection() {
-  const { voiceGuardrails, addVoiceGuardrail, updateVoiceGuardrail, removeVoiceGuardrail } = useWorkshopStore()
-
-  useEffect(() => {
-    if (voiceGuardrails.length === 0) {
-      const defaults = [
-        { positive: 'Confident', negative: 'Arrogant' },
-        { positive: 'Casual', negative: 'Sloppy' },
-        { positive: 'Bold', negative: 'Offensive' },
-      ]
-      defaults.forEach((g, i) => {
-        addVoiceGuardrail({ id: `vg-default-${i}`, ...g })
-      })
-    }
-  }, [])
-
-  return (
-    <div>
-      <h3 className="title-caps-md text-[#1A1A1A] mb-2">VOICE GUARDRAILS</h3>
-      <p className="text-sm text-[#2E2E2E] mb-6">
-        What the brand voice is and what it never becomes. These are the rules for how content sounds.
-      </p>
-
-      <div className="flex flex-col gap-3 mb-4">
-        {voiceGuardrails.map((g) => (
-          <motion.div
-            key={g.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="liquid-glass rounded-2xl p-4 flex items-center gap-3 group"
-          >
-            <div className="flex-1 flex items-center gap-3">
-              <Input
-                value={g.positive}
-                onChange={(e) => updateVoiceGuardrail(g.id, { positive: e.target.value })}
-                placeholder="We are..."
-                className="h-10 bg-white/20 border-[#2E5E8C]/15 text-[#1A1A1A] font-medium placeholder:text-[#1A1A1A]/25"
-              />
-              <span className="text-sm text-[#6A7A8A] shrink-0">but not</span>
-              <Input
-                value={g.negative}
-                onChange={(e) => updateVoiceGuardrail(g.id, { negative: e.target.value })}
-                placeholder="Never..."
-                className="h-10 bg-white/20 border-[#E85A5A]/15 text-[#1A1A1A] font-medium placeholder:text-[#1A1A1A]/25"
-              />
-            </div>
-            <button
-              onClick={() => removeVoiceGuardrail(g.id)}
-              className="text-[#1A1A1A]/10 hover:text-[#E85A5A] transition-colors opacity-0 group-hover:opacity-100 shrink-0"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </motion.div>
-        ))}
-      </div>
-
-      <button
-        onClick={() => addVoiceGuardrail({ id: uid(), positive: '', negative: '' })}
-        className="w-full rounded-2xl border border-dashed border-white/25 bg-white/8 py-3 transition-all hover:border-white/40 hover:bg-white/12"
-      >
-        <span className="title-caps-sm text-[#1A1A1A]/40">+ ADD GUARDRAIL</span>
-      </button>
-    </div>
-  )
-}
 
 /* ────────────────────────────────────────────────────────────
    Creative Direction Tab
