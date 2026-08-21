@@ -11,7 +11,7 @@ export async function proxy(req: NextRequest) {
   if (
     p.includes("/_next") ||
     p.includes("/api/health") ||
-    /\.(ico|png|jpe?g|svg|webp|gif|woff2?|css|js|map|txt)$/.test(p)
+    /\.(ico|png|jpe?g|svg|webp|avif|gif|mp4|webm|mov|m4v|mp3|wav|ogg|woff2?|ttf|otf|eot|css|js|map|txt)$/.test(p)
   ) {
     return NextResponse.next();
   }
