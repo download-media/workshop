@@ -191,7 +191,7 @@ export default function SummaryPage() {
         {/* Decorative header image */}
         <div className="relative mb-10 -mx-6 -mt-10 overflow-hidden" style={{ height: '180px' }}>
           <img
-            src="/images/frosted-cloud.jpeg"
+            src="/workshop/images/frosted-cloud.jpeg"
             alt=""
             className="absolute inset-0 h-full w-full object-cover print:hidden"
             style={{ opacity: 0.12 }}

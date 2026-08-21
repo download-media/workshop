@@ -193,7 +193,7 @@ export default function WorkshopOverview() {
       {/* Cloud background */}
       <div className="fixed inset-0 z-0">
         <Image
-          src="/images/cloud-cutouts.jpeg"
+          src="/workshop/images/cloud-cutouts.jpeg"
           alt=""
           fill
           className="object-cover opacity-[0.1]"
@@ -498,7 +498,7 @@ export default function WorkshopOverview() {
               ← EDIT DETAILS
             </button>
             <Image
-              src="/images/logo-wordmark-black.png"
+              src="/workshop/images/logo-wordmark-black.png"
               alt="DWNLD"
               width={60}
               height={15}

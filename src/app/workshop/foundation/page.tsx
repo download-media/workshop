@@ -123,7 +123,7 @@ export default function FoundationPage() {
             {/* Decorative background image */}
             <div className="absolute inset-0 overflow-hidden rounded-2xl">
               <Image
-                src="/images/cd-sky.jpeg"
+                src="/workshop/images/cd-sky.jpeg"
                 alt=""
                 fill
                 className="object-cover opacity-[0.06]"

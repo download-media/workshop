@@ -397,7 +397,7 @@ function SetupPage() {
         style={{ opacity: started ? 0 : 1, transform: 'scaleX(-1)' }}
       >
         <Image
-          src="/images/first-frame.jpg"
+          src="/workshop/images/first-frame.jpg"
           alt=""
           fill
           className="object-cover"
@@ -416,7 +416,7 @@ function SetupPage() {
       >
         <video
           ref={videoRef}
-          src="/images/intro.mp4"
+          src="/workshop/images/intro.mp4"
           onEnded={handleVideoEnd}
           playsInline
           muted
@@ -431,7 +431,7 @@ function SetupPage() {
           ═══════════════════════════════════════════════════ */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/images/last-frame.jpg"
+          src="/workshop/images/last-frame.jpg"
           alt=""
           fill
           className="object-cover"
@@ -555,7 +555,7 @@ function SetupPage() {
                   {/* Left edge — rotated in */}
                   <div style={{ perspective: '500px', opacity: 0.2 }}>
                     <Image
-                      src="/images/logo-wordmark-white.png"
+                      src="/workshop/images/logo-wordmark-white.png"
                       alt=""
                       width={90}
                       height={23}
@@ -571,7 +571,7 @@ function SetupPage() {
                   {/* Center — straight */}
                   <div style={{ opacity: 0.4 }}>
                     <Image
-                      src="/images/logo-wordmark-white.png"
+                      src="/workshop/images/logo-wordmark-white.png"
                       alt=""
                       width={100}
                       height={25}
@@ -583,7 +583,7 @@ function SetupPage() {
                   {/* Right edge — rotated in */}
                   <div style={{ perspective: '500px', opacity: 0.2 }}>
                     <Image
-                      src="/images/logo-wordmark-white.png"
+                      src="/workshop/images/logo-wordmark-white.png"
                       alt=""
                       width={90}
                       height={23}
@@ -704,7 +704,7 @@ function SetupPage() {
             transition={{ duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <Image
-              src="/images/cloud-cutouts.jpeg"
+              src="/workshop/images/cloud-cutouts.jpeg"
               alt=""
               fill
               className="object-cover opacity-[0.1]"

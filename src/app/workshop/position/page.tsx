@@ -434,7 +434,7 @@ function LandscapeMatrix() {
             {/* Decorative cloud image */}
             <div className="absolute inset-0 pointer-events-none z-0">
               <Image
-                src="/images/cloud-cutouts.jpeg"
+                src="/workshop/images/cloud-cutouts.jpeg"
                 alt=""
                 fill
                 className="object-cover opacity-[0.06]"

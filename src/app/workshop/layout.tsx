@@ -41,11 +41,11 @@ function NavBar({ children }: { children: ReactNode }) {
 const WORKSHOP_PHASES = PHASES.filter((p) => p.id !== 'setup')
 
 const PHASE_IMAGES: Record<string, string> = {
-  foundation: '/images/frosted-cloud.jpeg',
-  audience: '/images/clouds-portrait.jpeg',
-  position: '/images/bokeh-light.jpeg',
-  application: '/images/frosted-cloud.jpeg',
-  priorities: '/images/cloud-cutouts.jpeg',
+  foundation: '/workshop/images/frosted-cloud.jpeg',
+  audience: '/workshop/images/clouds-portrait.jpeg',
+  position: '/workshop/images/bokeh-light.jpeg',
+  application: '/workshop/images/frosted-cloud.jpeg',
+  priorities: '/workshop/images/cloud-cutouts.jpeg',
 }
 
 export default function WorkshopLayout({ children }: { children: React.ReactNode }) {
@@ -76,7 +76,7 @@ export default function WorkshopLayout({ children }: { children: React.ReactNode
           transition={{ duration: 1.5 }}
         >
           <Image
-            src={PHASE_IMAGES[currentPhase] || '/images/clouds-portrait.jpeg'}
+            src={PHASE_IMAGES[currentPhase] || '/workshop/images/clouds-portrait.jpeg'}
             alt=""
             fill
             className="object-cover opacity-[0.08]"
