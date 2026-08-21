@@ -1,189 +1,58 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+// data layer — Render Postgres (shared "download-db", schema "workshop"). Server-only (used in API routes).
+import { Pool } from 'pg'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const pool = process.env.DATABASE_URL
+  ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, options: '-c search_path=workshop,public' })
+  : (null as unknown as Pool)
 
-export const supabase: SupabaseClient = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null as unknown as SupabaseClient
+export const isSupabaseConfigured = !!process.env.DATABASE_URL
 
-export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey)
+async function q(text: string, params: unknown[] = []) { return pool.query(text, params) }
 
-/* ────────────────────────────────────────────────────────────
-   Database types
-   ──────────────────────────────────────────────────────────── */
+/* ── types ── */
+export interface DbClient { id: string; name: string; facilitator: string; created_at: string }
+export interface DbSession { id: string; client_id: string; service_type: string; date: string; status: 'active' | 'completed'; workshop_data: Record<string, unknown>; created_at: string; updated_at: string }
+export interface DbBrandProfile { id: string; client_id: string; website_url: string | null; guidelines_text: string | null; ai_analysis: Record<string, unknown> | null; created_at: string; updated_at: string }
 
-export interface DbClient {
-  id: string
-  name: string
-  facilitator: string
-  created_at: string
-}
-
-export interface DbSession {
-  id: string
-  client_id: string
-  service_type: string
-  date: string
-  status: 'active' | 'completed'
-  workshop_data: Record<string, unknown>
-  created_at: string
-  updated_at: string
-}
-
-export interface DbBrandProfile {
-  id: string
-  client_id: string
-  website_url: string | null
-  guidelines_text: string | null
-  ai_analysis: Record<string, unknown> | null
-  created_at: string
-  updated_at: string
-}
-
-/* ────────────────────────────────────────────────────────────
-   Client operations
-   ──────────────────────────────────────────────────────────── */
-
-export async function getClients() {
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return data as DbClient[]
-}
-
+/* ── clients ── */
+export async function getClients() { return (await q('select * from clients order by created_at desc')).rows as DbClient[] }
 export async function getClient(id: string) {
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('id', id)
-    .single()
-  if (error) throw error
-  return data as DbClient
+  const r = await q('select * from clients where id=$1', [id]); if (!r.rows[0]) throw new Error('client not found'); return r.rows[0] as DbClient
 }
-
 export async function getClientByName(name: string) {
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-    .ilike('name', name)
-    .maybeSingle()
-  if (error) throw error
-  return data as DbClient | null
+  const r = await q('select * from clients where name ilike $1 limit 1', [name]); return (r.rows[0] || null) as DbClient | null
 }
-
 export async function createClientRecord(name: string, facilitator: string) {
-  const { data, error } = await supabase
-    .from('clients')
-    .insert({ name, facilitator })
-    .select()
-    .single()
-  if (error) throw error
-  return data as DbClient
+  const r = await q('insert into clients (name,facilitator) values ($1,$2) returning *', [name, facilitator]); return r.rows[0] as DbClient
 }
 
-/* ────────────────────────────────────────────────────────────
-   Session operations
-   ──────────────────────────────────────────────────────────── */
-
+/* ── sessions ── */
 export async function getSessionsForClient(clientId: string) {
-  const { data, error } = await supabase
-    .from('sessions')
-    .select('*')
-    .eq('client_id', clientId)
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return data as DbSession[]
+  return (await q('select * from sessions where client_id=$1 order by created_at desc', [clientId])).rows as DbSession[]
 }
-
-export async function createSession(
-  clientId: string,
-  serviceType: string,
-  date: string,
-  workshopData: Record<string, unknown>
-) {
-  const { data, error } = await supabase
-    .from('sessions')
-    .insert({
-      client_id: clientId,
-      service_type: serviceType,
-      date,
-      status: 'active',
-      workshop_data: workshopData,
-    })
-    .select()
-    .single()
-  if (error) throw error
-  return data as DbSession
+export async function createSession(clientId: string, serviceType: string, date: string, workshopData: Record<string, unknown>) {
+  const r = await q(`insert into sessions (client_id,service_type,date,status,workshop_data) values ($1,$2,$3,'active',$4) returning *`,
+    [clientId, serviceType, date, JSON.stringify(workshopData)]); return r.rows[0] as DbSession
 }
-
-export async function updateSession(
-  sessionId: string,
-  workshopData: Record<string, unknown>
-) {
-  const { data, error } = await supabase
-    .from('sessions')
-    .update({
-      workshop_data: workshopData,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', sessionId)
-    .select()
-    .single()
-  if (error) throw error
-  return data as DbSession
+export async function updateSession(sessionId: string, workshopData: Record<string, unknown>) {
+  const r = await q('update sessions set workshop_data=$1, updated_at=now() where id=$2 returning *', [JSON.stringify(workshopData), sessionId]); return r.rows[0] as DbSession
 }
-
 export async function completeSession(sessionId: string) {
-  const { error } = await supabase
-    .from('sessions')
-    .update({ status: 'completed', updated_at: new Date().toISOString() })
-    .eq('id', sessionId)
-  if (error) throw error
+  await q(`update sessions set status='completed', updated_at=now() where id=$1`, [sessionId])
 }
 
-/* ────────────────────────────────────────────────────────────
-   Brand profile operations
-   ──────────────────────────────────────────────────────────── */
-
+/* ── brand profiles ── */
 export async function getBrandProfile(clientId: string) {
-  const { data, error } = await supabase
-    .from('brand_profiles')
-    .select('*')
-    .eq('client_id', clientId)
-    .maybeSingle()
-  if (error) throw error
-  return data as DbBrandProfile | null
+  const r = await q('select * from brand_profiles where client_id=$1 limit 1', [clientId]); return (r.rows[0] || null) as DbBrandProfile | null
 }
-
-export async function upsertBrandProfile(
-  clientId: string,
-  updates: Partial<Pick<DbBrandProfile, 'website_url' | 'guidelines_text' | 'ai_analysis'>>
-) {
-  const { data: existing } = await supabase
-    .from('brand_profiles')
-    .select('id')
-    .eq('client_id', clientId)
-    .maybeSingle()
-
+export async function upsertBrandProfile(clientId: string, updates: Partial<Pick<DbBrandProfile, 'website_url' | 'guidelines_text' | 'ai_analysis'>>) {
+  const existing = await getBrandProfile(clientId)
   if (existing) {
-    const { data, error } = await supabase
-      .from('brand_profiles')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('client_id', clientId)
-      .select()
-      .single()
-    if (error) throw error
-    return data as DbBrandProfile
-  } else {
-    const { data, error } = await supabase
-      .from('brand_profiles')
-      .insert({ client_id: clientId, ...updates })
-      .select()
-      .single()
-    if (error) throw error
-    return data as DbBrandProfile
+    const sets: string[] = []; const vals: unknown[] = []; let i = 1
+    for (const [k, v] of Object.entries(updates)) { sets.push(`"${k}"=$${i++}`); vals.push(k === 'ai_analysis' && v ? JSON.stringify(v) : v) }
+    sets.push('updated_at=now()'); vals.push(clientId)
+    const r = await q(`update brand_profiles set ${sets.join(',')} where client_id=$${i} returning *`, vals); return r.rows[0] as DbBrandProfile
   }
+  const r = await q('insert into brand_profiles (client_id,website_url,guidelines_text,ai_analysis) values ($1,$2,$3,$4) returning *',
+    [clientId, updates.website_url ?? null, updates.guidelines_text ?? null, updates.ai_analysis ? JSON.stringify(updates.ai_analysis) : null]); return r.rows[0] as DbBrandProfile
 }
