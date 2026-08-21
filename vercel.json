@@ -1,0 +1,6 @@
+{
+  "redirects": [
+    { "source": "/workshop/:path*", "destination": "https://download.lol/workshop/:path*", "permanent": false },
+    { "source": "/:path*", "destination": "https://download.lol/workshop", "permanent": false }
+  ]
+}
