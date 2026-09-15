@@ -33,6 +33,17 @@ interface WorkshopStore {
   config: WorkshopConfig
   setConfig: (config: Partial<WorkshopConfig>) => void
 
+  // Server session identity — set on launch/resume so auto-save updates one row
+  sessionId: string | null
+  setSessionId: (id: string | null) => void
+
+  // AI-generated strategic brief — persisted with the session
+  aiBrief: string
+  setAiBrief: (brief: string) => void
+
+  // Load a saved session's workshop_data back into the store (resume / open past session)
+  hydrateSession: (sessionId: string | null, data: Record<string, unknown>) => void
+
   // Phase 1: Foundation
   goldenCircle: GoldenCircle
   setGoldenCircle: (data: Partial<GoldenCircle>) => void
@@ -147,6 +158,8 @@ const defaultVideoStyles: VideoStyle[] = [
 
 const initialState = {
   currentPhase: 'setup' as PhaseId,
+  sessionId: null as string | null,
+  aiBrief: '',
   config: { clientName: '', facilitatorName: '', serviceType: 'social' as const, date: new Date().toISOString().split('T')[0] },
   goldenCircle: { what: '', how: '', why: '', leadTheme: '' },
   audiences: [],
@@ -193,6 +206,21 @@ export const useWorkshopStore = create<WorkshopStore>()(
 
       setCurrentPhase: (phase) => set({ currentPhase: phase }),
       setConfig: (config) => set((s) => ({ config: { ...s.config, ...config } })),
+      setSessionId: (id) => set({ sessionId: id }),
+      setAiBrief: (brief) => set({ aiBrief: brief }),
+
+      hydrateSession: (sessionId, data) => set(() => {
+        const d = data as Partial<typeof initialState> & { config?: WorkshopConfig }
+        return {
+          ...initialState,
+          ...Object.fromEntries(
+            Object.entries(d).filter(([k, v]) => k in initialState && v !== undefined && v !== null)
+          ),
+          config: d.config ? { ...initialState.config, ...d.config } : initialState.config,
+          sessionId,
+          currentPhase: 'foundation' as PhaseId,
+        }
+      }),
       setGoldenCircle: (data) => set((s) => ({ goldenCircle: { ...s.goldenCircle, ...data } })),
 
       addAudience: (audience) => set((s) => ({ audiences: [...s.audiences, audience] })),

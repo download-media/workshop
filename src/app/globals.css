@@ -457,3 +457,56 @@ select:focus {
     box-shadow: none !important;
   }
 }
+
+/* ── Print: the summary as a clean white document ── */
+@media print {
+  @page {
+    margin: 14mm 12mm;
+  }
+  html, body {
+    background: white !important;
+  }
+  /* App chrome never prints: nav bars, toolbars, fixed layers (backgrounds, progress line, bottom nav) */
+  nav, .no-print, .print-hide, .fixed {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  /* Framer Motion leaves inline opacity/transform mid-animation — force everything visible */
+  main, main * {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Let long sections flow across pages, but keep individual cards intact */
+  .summary-section {
+    break-inside: auto;
+  }
+  .summary-section > div:first-child {
+    break-after: avoid;
+  }
+  .summary-card {
+    break-inside: avoid;
+    background: white !important;
+    border-color: #E2E6EA !important;
+  }
+  .summary-doc table {
+    break-inside: auto;
+  }
+  .summary-doc tr {
+    break-inside: avoid;
+  }
+  .summary-doc footer {
+    break-inside: avoid;
+  }
+}

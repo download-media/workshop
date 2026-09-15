@@ -3,40 +3,44 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useWorkshopStore } from './store'
 
+export function serializeWorkshop(store: ReturnType<typeof useWorkshopStore.getState>) {
+  return {
+    config: store.config,
+    goldenCircle: store.goldenCircle,
+    audiences: store.audiences,
+    empathyMaps: store.empathyMaps,
+    beforeAfter: store.beforeAfter,
+    competitors: store.competitors,
+    landscapePositions: store.landscapePositions,
+    landscapeAxes: store.landscapeAxes,
+    voiceAttributes: store.voiceAttributes,
+    personalitySliders: store.personalitySliders,
+    voiceGuardrails: store.voiceGuardrails,
+    toneDimensions: store.toneDimensions,
+    contentPillars: store.contentPillars,
+    platformStrategies: store.platformStrategies,
+    logistics: store.logistics,
+    videoStyles: store.videoStyles,
+    campaignIdeas: store.campaignIdeas,
+    priorities: store.priorities,
+    aiBrief: store.aiBrief,
+  }
+}
+
 export function useAutoSave() {
   const store = useWorkshopStore()
-  const sessionIdRef = useRef<string | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastSavedRef = useRef<string>('')
+  const inFlightRef = useRef(false)
 
   const save = useCallback(async () => {
-    if (!store.config.clientName) return
+    if (!store.config.clientName || inFlightRef.current) return
 
-    // Serialize current state (excluding functions)
-    const data = {
-      config: store.config,
-      goldenCircle: store.goldenCircle,
-      audiences: store.audiences,
-      empathyMaps: store.empathyMaps,
-      beforeAfter: store.beforeAfter,
-      competitors: store.competitors,
-      landscapePositions: store.landscapePositions,
-      landscapeAxes: store.landscapeAxes,
-      voiceAttributes: store.voiceAttributes,
-      personalitySliders: store.personalitySliders,
-      voiceGuardrails: store.voiceGuardrails,
-      toneDimensions: store.toneDimensions,
-      contentPillars: store.contentPillars,
-      platformStrategies: store.platformStrategies,
-      videoStyles: store.videoStyles,
-      campaignIdeas: store.campaignIdeas,
-      priorities: store.priorities,
-    }
-
+    const data = serializeWorkshop(store)
     const serialized = JSON.stringify(data)
     if (serialized === lastSavedRef.current) return // No changes
-    lastSavedRef.current = serialized
 
+    inFlightRef.current = true
     try {
       const res = await fetch('/api/save-session', {
         method: 'POST',
@@ -47,18 +51,21 @@ export function useAutoSave() {
           serviceType: store.config.serviceType,
           date: store.config.date,
           workshopData: data,
-          sessionId: sessionIdRef.current,
+          sessionId: store.sessionId,
         }),
       })
 
       if (res.ok) {
+        lastSavedRef.current = serialized
         const result = await res.json()
-        if (result.session?.id) {
-          sessionIdRef.current = result.session.id
+        if (result.session?.id && result.session.id !== store.sessionId) {
+          store.setSessionId(result.session.id)
         }
       }
     } catch (e) {
       console.warn('Auto-save failed:', e)
+    } finally {
+      inFlightRef.current = false
     }
   }, [store])
 
@@ -79,18 +86,21 @@ export function useAutoSave() {
     store.beforeAfter,
     store.competitors,
     store.landscapePositions,
+    store.landscapeAxes,
     store.voiceAttributes,
     store.personalitySliders,
     store.voiceGuardrails,
     store.toneDimensions,
     store.contentPillars,
     store.platformStrategies,
+    store.logistics,
     store.videoStyles,
     store.campaignIdeas,
     store.priorities,
+    store.aiBrief,
     save,
     store.config.clientName,
   ])
 
-  return { sessionId: sessionIdRef.current }
+  return { sessionId: store.sessionId }
 }

@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isSupabaseConfigured } from '@/lib/supabase'
 import {
+  isSupabaseConfigured,
   getClientByName,
   createClientRecord,
-  createSession,
+  findOrCreateSession,
   updateSession,
   getSessionsForClient,
 } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   if (!isSupabaseConfigured) {
-    return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 })
+    return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
   }
   try {
     const { clientName, facilitator, serviceType, date, workshopData, sessionId } = await req.json()
@@ -18,16 +18,21 @@ export async function POST(req: NextRequest) {
     // If updating existing session
     if (sessionId) {
       const session = await updateSession(sessionId, workshopData)
-      return NextResponse.json({ session })
+      if (session) return NextResponse.json({ session })
+      // Session row was deleted from the internal view — fall through and re-attach below
     }
 
-    // Creating new session — find or create client
+    // Find or create client
     let client = await getClientByName(clientName)
     if (!client) {
       client = await createClientRecord(clientName, facilitator)
     }
 
-    const session = await createSession(client.id, serviceType, date, workshopData)
+    // One session per client + service + date — same-day work continues, a new day is a new version
+    let session = await findOrCreateSession(client.id, serviceType, date, workshopData)
+    if (workshopData && Object.keys(workshopData).length > 0) {
+      session = await updateSession(session.id, workshopData)
+    }
     return NextResponse.json({ session, client })
   } catch (error) {
     console.error('Save session error:', error)
@@ -40,7 +45,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   if (!isSupabaseConfigured) {
-    return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 })
+    return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
   }
   try {
     const clientId = req.nextUrl.searchParams.get('clientId')

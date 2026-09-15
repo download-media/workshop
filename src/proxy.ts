@@ -11,6 +11,9 @@ export async function proxy(req: NextRequest) {
   if (
     p.includes("/_next") ||
     p.includes("/api/health") ||
+    p.includes("/api/portal-brief") || // client-facing, gated by access code instead
+    p.includes("/share/") || // client-facing read-only summary, gated by access code in the URL
+    /\/share$/.test(p) ||
     /\.(ico|png|jpe?g|svg|webp|avif|gif|mp4|webm|mov|m4v|mp3|wav|ogg|woff2?|ttf|otf|eot|css|js|map|txt)$/.test(p)
   ) {
     return NextResponse.next();

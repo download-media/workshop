@@ -6,8 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, X } from 'lucide-react'
 import Image from 'next/image'
 import { useWorkshopStore } from '@/lib/store'
-import { useClientStore } from '@/lib/client-store'
-import type { ClientRecord } from '@/lib/client-store'
 
 const SERVICE_LABELS: Record<string, string> = {
   social: 'Social Media',
@@ -23,14 +21,67 @@ const SESSION_ROUTES: Record<string, string> = {
   ideation: '/workshop/ideation',
 }
 
+interface DbSessionRow {
+  id: string
+  service_type: string
+  date: string
+  status: 'active' | 'completed'
+  updated_at: string
+}
+
+interface DbClientRow {
+  id: string
+  name: string
+  facilitator: string
+  access_code: string | null
+  sessions: DbSessionRow[]
+}
+
 export default function WorkshopOverview() {
   const router = useRouter()
-  const { config, setCurrentPhase, resetWorkshop, setConfig,
+  const { config, setCurrentPhase, resetWorkshop, setConfig, hydrateSession, sessionId,
     setGoldenCircle, addAudience, updatePersonalitySlider, addContentPillar
   } = useWorkshopStore()
-  const { clients } = useClientStore()
   const [elementsVisible, setElementsVisible] = useState(false)
   const [showClientSwitch, setShowClientSwitch] = useState(false)
+
+  // Server truth — every client and session in the DB, shared across machines
+  const [dbClients, setDbClients] = useState<DbClientRow[]>([])
+  const [openingSession, setOpeningSession] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/clients')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data?.clients) setDbClients(data.clients) })
+      .catch(() => {})
+  }, [])
+
+  const dbClient = dbClients.find(
+    (c) => c.name.toLowerCase() === config.clientName?.toLowerCase()
+  )
+
+  async function handleResumeSession(id: string) {
+    setOpeningSession(id)
+    try {
+      const res = await fetch(`/api/sessions/${id}`)
+      if (!res.ok) throw new Error()
+      const { session, client } = await res.json()
+      const data = (session.workshop_data || {}) as Record<string, unknown>
+      const prevConfig = (data.config || {}) as { facilitatorName?: string }
+      hydrateSession(session.id, {
+        ...data,
+        config: {
+          clientName: client.name,
+          facilitatorName: prevConfig.facilitatorName || client.facilitator,
+          serviceType: session.service_type,
+          date: session.date,
+        },
+      })
+      router.push(session.service_type === 'ideation' ? '/workshop/ideation' : '/workshop/foundation')
+    } catch {
+      setOpeningSession(null)
+    }
+  }
 
   // Brand intel state
   const [websiteUrl, setWebsiteUrl] = useState('')
@@ -42,17 +93,12 @@ export default function WorkshopOverview() {
   const [applied, setApplied] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Get current client record for session history
-  const currentClient = clients.find(
-    (c) => c.name.toLowerCase() === config.clientName?.toLowerCase()
-  )
-
   useEffect(() => {
     if (!config.clientName) {
       router.replace('/')
       return
     }
-    const timer = setTimeout(() => setElementsVisible(true), 400)
+    const timer = setTimeout(() => setElementsVisible(true), 150)
     return () => clearTimeout(timer)
   }, [config.clientName, router])
 
@@ -164,12 +210,12 @@ export default function WorkshopOverview() {
     router.push('/?form=1')
   }
 
-  function handleSwitchToClient(client: ClientRecord) {
+  function handleSwitchToClient(client: DbClientRow) {
     resetWorkshop()
     setConfig({
       clientName: client.name,
       facilitatorName: client.facilitator,
-      serviceType: client.lastServiceType as 'social' | 'web' | 'branding' | 'ideation',
+      serviceType: (client.sessions[0]?.service_type as 'social' | 'web' | 'branding' | 'ideation') || 'social',
       date: new Date().toISOString().split('T')[0],
     })
     setShowClientSwitch(false)
@@ -204,7 +250,7 @@ export default function WorkshopOverview() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: elementsVisible ? 1 : 0 }}
-        transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="relative z-10 mx-auto max-w-3xl px-6 sm:px-10 py-20 sm:py-28 min-h-screen flex flex-col"
       >
         {/* Date */}
@@ -440,38 +486,49 @@ export default function WorkshopOverview() {
           transition={{ duration: 0.7, delay: 1.3 }}
           className="mt-12"
         >
-          <p className="title-caps-sm text-ink/30 mb-6">SESSIONS</p>
+          <p className="title-caps-sm text-ink/30 mb-6">PAST SESSIONS</p>
 
           <div className="flex flex-col gap-2">
-            {Object.entries(SERVICE_LABELS).map(([key, label]) => {
-              const isCurrentService = key === config.serviceType
-              const pastSessions = currentClient?.sessions.filter(
-                (s) => s.serviceType === key
-              ) || []
-              const hasSessions = pastSessions.length > 0
-
+            {(dbClient?.sessions || []).length === 0 && (
+              <div className="liquid-glass-subtle rounded-2xl p-5 sm:p-6">
+                <span className="text-xs text-ink/25">
+                  No saved sessions for {config.clientName} yet. Today&apos;s session saves automatically as you work.
+                </span>
+              </div>
+            )}
+            {(dbClient?.sessions || []).map((session) => {
+              const isThisSession = session.id === sessionId
+              const label = SERVICE_LABELS[session.service_type] || session.service_type
               return (
                 <div
-                  key={key}
-                  className={`rounded-2xl p-5 sm:p-6 transition-all ${
-                    isCurrentService ? 'liquid-glass' : hasSessions ? 'liquid-glass-subtle' : 'liquid-glass-subtle'
-                  }`}
+                  key={session.id}
+                  className={`rounded-2xl p-5 sm:p-6 transition-all ${isThisSession ? 'liquid-glass' : 'liquid-glass-subtle hover:bg-white/40'}`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
                       <span className="title-caps-sm text-ink/50">{label.toUpperCase()}</span>
-                      {isCurrentService && (
+                      <span className="text-xs text-ink/35">{session.date}</span>
+                      {isThisSession && (
                         <span className="text-[10px] font-bold tracking-wider text-[#2E5E8C] bg-[#2E5E8C]/10 rounded-full px-2.5 py-0.5">
-                          TODAY
+                          CURRENT
                         </span>
                       )}
-                    </div>
-                    {hasSessions ? (
-                      <span className="text-xs text-ink/35">
-                        {pastSessions.map((s) => s.date).join(', ')}
+                      <span className={`text-[10px] font-bold tracking-wider rounded-full px-2.5 py-0.5 ${
+                        session.status === 'completed'
+                          ? 'text-[#2E5E8C]/70 bg-[#2E5E8C]/5'
+                          : 'text-[#E8855A] bg-[#E8855A]/10'
+                      }`}>
+                        {session.status === 'completed' ? 'COMPLETE' : 'IN PROGRESS'}
                       </span>
-                    ) : (
-                      <span className="text-xs text-ink/15">No sessions</span>
+                    </div>
+                    {!isThisSession && (
+                      <button
+                        onClick={() => handleResumeSession(session.id)}
+                        disabled={openingSession === session.id}
+                        className="shrink-0 rounded-full px-3.5 py-1.5 text-[10px] font-bold tracking-wider text-ink/40 hover:text-white hover:bg-ink transition-all"
+                      >
+                        {openingSession === session.id ? 'OPENING...' : 'RESUME →'}
+                      </button>
                     )}
                   </div>
                 </div>
@@ -506,17 +563,23 @@ export default function WorkshopOverview() {
             />
           </div>
 
-          {/* Switch client */}
-          {clients.length > 1 && (
-            <div className="mt-6 flex items-center justify-center">
+          {/* Switch client / internal view */}
+          <div className="mt-6 flex items-center justify-center gap-6">
+            {dbClients.length > 1 && (
               <button
                 onClick={() => setShowClientSwitch(!showClientSwitch)}
                 className="text-[11px] text-ink/20 hover:text-ink/45 transition-colors tracking-wide"
               >
                 {showClientSwitch ? 'Close' : 'Switch client'}
               </button>
-            </div>
-          )}
+            )}
+            <button
+              onClick={() => router.push('/clients')}
+              className="text-[11px] text-ink/20 hover:text-ink/45 transition-colors tracking-wide"
+            >
+              Internal view
+            </button>
+          </div>
 
           <AnimatePresence>
             {showClientSwitch && (
@@ -528,7 +591,7 @@ export default function WorkshopOverview() {
                 className="mt-4 overflow-hidden"
               >
                 <div className="flex flex-col gap-2">
-                  {clients
+                  {dbClients
                     .filter((c) => c.name.toLowerCase() !== config.clientName?.toLowerCase())
                     .map((client) => (
                       <button
@@ -542,7 +605,8 @@ export default function WorkshopOverview() {
                               {client.name.toUpperCase()}
                             </p>
                             <p className="text-[11px] text-ink/25 mt-1">
-                              {client.sessions.length} session{client.sessions.length !== 1 ? 's' : ''} &middot; Last: {client.lastServiceType}
+                              {client.sessions.length} session{client.sessions.length !== 1 ? 's' : ''}
+                              {client.sessions[0] && <> &middot; Last: {client.sessions[0].service_type}</>}
                             </p>
                           </div>
                           <ArrowRight className="h-3.5 w-3.5 text-ink/15 group-hover:text-ink/40 transition-colors" />

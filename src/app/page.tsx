@@ -35,6 +35,26 @@ function FormSteps({
   const [step, setStep] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Existing-client suggestions from the DB — picking one keeps the exact same
+  // spelling so sessions always tie back to one client record
+  const [suggestions, setSuggestions] = useState<{ id: string; name: string; facilitator: string }[]>([])
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
+
+  useEffect(() => {
+    if (step !== 0 || clientName.trim().length < 2) return
+    const controller = new AbortController()
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/clients?search=${encodeURIComponent(clientName.trim())}`, { signal: controller.signal })
+        if (res.ok) {
+          const data = await res.json()
+          setSuggestions(data.clients || [])
+        }
+      } catch {}
+    }, 250)
+    return () => { clearTimeout(timer); controller.abort() }
+  }, [clientName, step])
+
   useEffect(() => {
     // Auto-focus text inputs
     if (step < 2) {
@@ -114,16 +134,49 @@ function FormSteps({
             </label>
 
             {step === 0 && (
-              <input
-                ref={inputRef}
-                type="text"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Who is this for?"
-                className="w-full bg-transparent text-center text-xl font-bold tracking-tight text-[#1A1A1A] outline-none border-b border-[#1A1A1A]/10 pb-2 placeholder:text-[#1A1A1A]/18 focus:border-[#4A8AC2]/40"
-                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
-              />
+              <div className="relative w-full">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => { setClientName(e.target.value); setSuggestionsOpen(true) }}
+                  onKeyDown={handleKeyDown}
+                  onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
+                  placeholder="Who is this for?"
+                  className="w-full bg-transparent text-center text-xl font-bold tracking-tight text-[#1A1A1A] outline-none border-b border-[#1A1A1A]/10 pb-2 placeholder:text-[#1A1A1A]/18 focus:border-[#4A8AC2]/40"
+                  style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                />
+                {suggestionsOpen && clientName.trim().length >= 2 && suggestions.length > 0 &&
+                  suggestions[0].name.toLowerCase() !== clientName.trim().toLowerCase() && (
+                  <div
+                    className="absolute left-0 right-0 top-full mt-2 z-30 rounded-xl overflow-hidden"
+                    style={{
+                      background: 'rgba(255,255,255,0.9)',
+                      backdropFilter: 'blur(20px)',
+                      WebkitBackdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(0,0,0,0.06)',
+                      boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+                    }}
+                  >
+                    {suggestions.slice(0, 4).map((s) => (
+                      <button
+                        key={s.id}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setClientName(s.name)
+                          setSuggestionsOpen(false)
+                          setStep(1)
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-sm text-[#1A1A1A]/70 hover:bg-black/[0.03] transition-colors flex items-center justify-between"
+                        style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                      >
+                        <span className="font-semibold">{s.name}</span>
+                        <span className="text-[10px] tracking-wider text-[#1A1A1A]/30 uppercase">Existing</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             {step === 1 && (
@@ -261,7 +314,7 @@ function SetupPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const skipToForm = searchParams.get('form') === '1'
-  const { config, setConfig, setCurrentPhase, resetWorkshop } = useWorkshopStore()
+  const { config, setConfig, setCurrentPhase, resetWorkshop, setSessionId } = useWorkshopStore()
   const registerClient = useClientStore((s) => s.registerClient)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -269,26 +322,21 @@ function SetupPage() {
   const [videoEnded, setVideoEnded] = useState(skipToForm)
   const [logoVisible, setLogoVisible] = useState(false)
   const [formVisible, setFormVisible] = useState(skipToForm)
+  const [videoFading, setVideoFading] = useState(skipToForm)
 
-  // Sync skip state when navigating back with ?form=1
-  useEffect(() => {
-    if (skipToForm) {
-      setStarted(true)
-      setVideoEnded(true)
-      setVideoFading(true)
-      setFormVisible(true)
-    }
-  }, [skipToForm])
+  // Sync skip state when navigating back with ?form=1 (adjust-during-render pattern)
+  if (skipToForm && !formVisible) {
+    setStarted(true)
+    setVideoEnded(true)
+    setVideoFading(true)
+    setFormVisible(true)
+  }
 
   const [clientName, setClientName] = useState(config.clientName)
   const [facilitatorName, setFacilitatorName] = useState(config.facilitatorName)
   const [serviceType, setServiceType] = useState<typeof config.serviceType>(config.serviceType)
   const [date, setDate] = useState(config.date)
-  const [isReady, setIsReady] = useState(false)
-
-  useEffect(() => {
-    setIsReady(clientName.trim().length > 0 && facilitatorName.trim().length > 0 && date.length > 0)
-  }, [clientName, facilitatorName, date])
+  const isReady = clientName.trim().length > 0 && facilitatorName.trim().length > 0 && date.length > 0
 
   // Fade in logo
   useEffect(() => {
@@ -335,8 +383,6 @@ function SetupPage() {
   }, [handleStart, handleSkipToForm, started, formVisible])
 
   // Start fading video before it fully ends — crossfade during final motion
-  const [videoFading, setVideoFading] = useState(false)
-
   useEffect(() => {
     const video = videoRef.current
     if (!video || !started) return
@@ -364,10 +410,12 @@ function SetupPage() {
 
   const [launching, setLaunching] = useState(false)
 
-  // Reset launching state when coming back via ?form=1
-  useEffect(() => {
-    if (skipToForm) setLaunching(false)
-  }, [skipToForm])
+  // Reset launching state when coming back via ?form=1 (adjust-during-render pattern)
+  const [prevSkipToForm, setPrevSkipToForm] = useState(skipToForm)
+  if (skipToForm !== prevSkipToForm) {
+    setPrevSkipToForm(skipToForm)
+    if (skipToForm && launching) setLaunching(false)
+  }
 
   function handleLaunch() {
     if (!isReady || launching) return
@@ -375,10 +423,34 @@ function SetupPage() {
     setConfig({ clientName, facilitatorName, serviceType, date })
     registerClient(clientName, facilitatorName, serviceType, date)
     setLaunching(true)
-    // Navigate after the cloud fade completes
+
+    // Register client + session in the DB while the fade runs. The returned session id
+    // makes auto-save update one row instead of spawning duplicates; the canonical name
+    // keeps "aeropress" and "AeroPress" tied to the same client record.
+    fetch('/api/save-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        clientName,
+        facilitator: facilitatorName,
+        serviceType,
+        date,
+        workshopData: { config: { clientName, facilitatorName, serviceType, date } },
+      }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.session?.id) setSessionId(data.session.id)
+        if (data?.client?.name && data.client.name !== clientName) {
+          setConfig({ clientName: data.client.name })
+        }
+      })
+      .catch(() => {})
+
+    // Navigate after a quick fade
     setTimeout(() => {
       router.push('/overview')
-    }, 2000)
+    }, 700)
   }
 
   return (
@@ -656,6 +728,18 @@ function SetupPage() {
               </motion.div>
             </div>
 
+            {/* Internal view link — bottom left */}
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 1.2 }}
+              onClick={() => router.push('/clients')}
+              className="absolute left-8 z-30 text-[11px] tracking-[0.2em] text-white/20 hover:text-white/50 transition-colors"
+              style={{ bottom: '6.8vh', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+            >
+              INTERNAL →
+            </motion.button>
+
             {/* Begin button — pinned to bottom */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -701,7 +785,7 @@ function SetupPage() {
             className="fixed inset-0 z-50 sky-bg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <Image
               src="/workshop/images/cloud-cutouts.jpeg"
