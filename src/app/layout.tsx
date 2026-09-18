@@ -2,6 +2,11 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 
+// Every page renders per-request. Prerendered pages get Cache-Control
+// s-maxage=1y from self-hosted Next (which config headers CANNOT override),
+// and the Vercel proxy in front cached one user's HTML for everyone.
+export const dynamic = 'force-dynamic'
+
 const inter = Inter({
   variable: '--font-sans',
   subsets: ['latin'],

@@ -27,7 +27,13 @@ export async function proxy(req: NextRequest) {
       });
       if (r.ok) {
         const j = await r.json();
-        if (j && j.user) return NextResponse.next();
+        if (j && j.user) {
+          // Belt and suspenders with force-dynamic: gated responses are
+          // per-user and must never be stored by any shared cache.
+          const res = NextResponse.next();
+          res.headers.set("Cache-Control", "private, no-store");
+          return res;
+        }
       }
     } catch {}
   }
