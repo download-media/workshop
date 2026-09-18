@@ -3,8 +3,21 @@ import { Pool } from 'pg'
 import { randomBytes } from 'crypto'
 
 const pool = process.env.DATABASE_URL
-  ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, options: '-c search_path=workshop,public' })
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      options: '-c search_path=workshop,public',
+      max: 5,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+      keepAlive: true,
+    })
   : (null as unknown as Pool)
+
+// Managed Postgres drops idle connections; without this handler that surfaces as an
+// unhandled 'error' event and kills the whole server process (the "API is dead until
+// the service restarts" failure mode). Log it and let the pool replace the client.
+if (pool) pool.on('error', (e) => console.error('pg pool idle client error (recovered):', e.message))
 
 export const isSupabaseConfigured = !!process.env.DATABASE_URL
 
@@ -23,7 +36,16 @@ function ensureSchema() {
 
 async function q(text: string, params: unknown[] = []) {
   await ensureSchema()
-  return pool.query(text, params)
+  try {
+    return await pool.query(text, params)
+  } catch (e) {
+    // One retry for connection-shaped failures — a stale pooled client that the
+    // server just killed. Real SQL errors rethrow immediately.
+    if (/terminat|ECONNRESET|ECONNREFUSED|ETIMEDOUT|Connection|timeout/i.test(String((e as Error)?.message))) {
+      return await pool.query(text, params)
+    }
+    throw e
+  }
 }
 
 /* ── types ── */

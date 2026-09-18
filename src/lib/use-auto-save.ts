@@ -42,7 +42,7 @@ export function useAutoSave() {
 
     inFlightRef.current = true
     try {
-      const res = await fetch('/api/save-session', {
+      const res = await fetch('/workshop/api/save-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

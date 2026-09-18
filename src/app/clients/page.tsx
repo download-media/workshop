@@ -55,7 +55,7 @@ export default function ClientsPage() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/clients')
+      const res = await fetch('/workshop/api/clients')
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         throw new Error(data?.error || 'Could not load clients')
@@ -75,7 +75,7 @@ export default function ClientsPage() {
   async function openSession(sessionId: string, dest: '/overview' | '/workshop/summary') {
     setBusy(sessionId)
     try {
-      const res = await fetch(`/api/sessions/${sessionId}`)
+      const res = await fetch(`/workshop/api/sessions/${sessionId}`)
       if (!res.ok) throw new Error('Could not load session')
       const { session, client } = await res.json()
       const data = (session.workshop_data || {}) as Record<string, unknown>
@@ -99,12 +99,12 @@ export default function ClientsPage() {
   async function removeSession(session: SessionRow, clientName: string) {
     const ok = window.confirm(`Delete the ${SERVICE_LABELS[session.service_type] || session.service_type} session from ${fmtDate(session.date)} for ${clientName}? This cannot be undone.`)
     if (!ok) return
-    await fetch(`/api/sessions/${session.id}`, { method: 'DELETE' })
+    await fetch(`/workshop/api/sessions/${session.id}`, { method: 'DELETE' })
     load()
   }
 
   async function toggleStatus(session: SessionRow) {
-    await fetch(`/api/sessions/${session.id}`, {
+    await fetch(`/workshop/api/sessions/${session.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: session.status === 'completed' ? 'active' : 'completed' }),
@@ -113,7 +113,7 @@ export default function ClientsPage() {
   }
 
   async function regenerateCode(client: ClientRow) {
-    await fetch(`/api/clients/${client.id}`, {
+    await fetch(`/workshop/api/clients/${client.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ regenerateCode: true }),
@@ -124,7 +124,7 @@ export default function ClientsPage() {
   async function setCustomCode(client: ClientRow) {
     const code = window.prompt('Set a custom access code (letters and numbers, min 6 characters):', client.access_code || '')
     if (!code || code.trim().length < 6) return
-    await fetch(`/api/clients/${client.id}`, {
+    await fetch(`/workshop/api/clients/${client.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ accessCode: code }),

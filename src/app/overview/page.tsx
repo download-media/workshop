@@ -50,7 +50,7 @@ export default function WorkshopOverview() {
   const [openingSession, setOpeningSession] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/clients')
+    fetch('/workshop/api/clients')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => { if (data?.clients) setDbClients(data.clients) })
       .catch(() => {})
@@ -63,7 +63,7 @@ export default function WorkshopOverview() {
   async function handleResumeSession(id: string) {
     setOpeningSession(id)
     try {
-      const res = await fetch(`/api/sessions/${id}`)
+      const res = await fetch(`/workshop/api/sessions/${id}`)
       if (!res.ok) throw new Error()
       const { session, client } = await res.json()
       const data = (session.workshop_data || {}) as Record<string, unknown>
@@ -116,7 +116,7 @@ export default function WorkshopOverview() {
     setScanError('')
     setScanResult(null)
     try {
-      const res = await fetch('/api/brand-scan', {
+      const res = await fetch('/workshop/api/brand-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

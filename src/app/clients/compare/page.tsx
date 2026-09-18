@@ -40,7 +40,7 @@ function fmtDate(d: string) {
 }
 
 async function loadSession(id: string): Promise<LoadedSession | null> {
-  const res = await fetch(`/api/sessions/${id}`)
+  const res = await fetch(`/workshop/api/sessions/${id}`)
   if (!res.ok) return null
   const { session, client } = await res.json()
   return {

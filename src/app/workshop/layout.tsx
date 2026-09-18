@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
@@ -50,12 +50,25 @@ const PHASE_IMAGES: Record<string, string> = {
 
 export default function WorkshopLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { currentPhase, setCurrentPhase, config } = useWorkshopStore()
-  useAutoSave() // Auto-saves workshop data to Supabase every 3s
+  useAutoSave() // Auto-saves workshop data every 3s
 
-  const currentIndex = WORKSHOP_PHASES.findIndex((p) => p.id === currentPhase)
-  const prev = getPrevPhase(currentPhase)
-  const next = getNextPhase(currentPhase)
+  // The URL is the single source of truth for which phase is showing. The store
+  // follows it (covers browser back/forward, direct links, and reloads) — keying
+  // the animations off store state alone left it stale after router.back(),
+  // which blanked or mislabeled the page.
+  const routeSegment = pathname?.split('/').filter(Boolean).pop() ?? ''
+  const routePhase = WORKSHOP_PHASES.find((p) => p.id === routeSegment)?.id
+  const activePhase: PhaseId = routePhase ?? currentPhase
+
+  useEffect(() => {
+    if (routePhase && routePhase !== currentPhase) setCurrentPhase(routePhase)
+  }, [routePhase, currentPhase, setCurrentPhase])
+
+  const currentIndex = WORKSHOP_PHASES.findIndex((p) => p.id === activePhase)
+  const prev = getPrevPhase(activePhase)
+  const next = getNextPhase(activePhase)
 
   function navigatePhase(phaseId: PhaseId) {
     setCurrentPhase(phaseId)
@@ -66,9 +79,9 @@ export default function WorkshopLayout({ children }: { children: React.ReactNode
     <div className="relative min-h-screen sky-bg">
 
       {/* ── Full bleed background image — fades between phases ── */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         <motion.div
-          key={currentPhase}
+          key={activePhase}
           className="pointer-events-none fixed inset-0 z-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -76,7 +89,7 @@ export default function WorkshopLayout({ children }: { children: React.ReactNode
           transition={{ duration: 1.5 }}
         >
           <Image
-            src={PHASE_IMAGES[currentPhase] || '/workshop/images/clouds-portrait.jpeg'}
+            src={PHASE_IMAGES[activePhase] || '/workshop/images/clouds-portrait.jpeg'}
             alt=""
             fill
             className="object-cover opacity-[0.08]"
@@ -100,7 +113,7 @@ export default function WorkshopLayout({ children }: { children: React.ReactNode
         {/* Center: phases as bare text */}
         <div className="hidden md:flex items-center gap-1">
           {WORKSHOP_PHASES.map((phase, idx) => {
-            const isActive = phase.id === currentPhase
+            const isActive = phase.id === activePhase
             const isPast = idx < currentIndex
             return (
               <button
@@ -145,9 +158,9 @@ export default function WorkshopLayout({ children }: { children: React.ReactNode
 
       {/* ── Content — full bleed, exercises live directly on the sky ── */}
       <main className="relative z-10 pt-24 pb-24 min-h-screen">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <motion.div
-            key={currentPhase}
+            key={activePhase}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}

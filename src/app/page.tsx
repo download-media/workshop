@@ -45,7 +45,7 @@ function FormSteps({
     const controller = new AbortController()
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/clients?search=${encodeURIComponent(clientName.trim())}`, { signal: controller.signal })
+        const res = await fetch(`/workshop/api/clients?search=${encodeURIComponent(clientName.trim())}`, { signal: controller.signal })
         if (res.ok) {
           const data = await res.json()
           setSuggestions(data.clients || [])
@@ -427,7 +427,7 @@ function SetupPage() {
     // Register client + session in the DB while the fade runs. The returned session id
     // makes auto-save update one row instead of spawning duplicates; the canonical name
     // keeps "aeropress" and "AeroPress" tied to the same client record.
-    fetch('/api/save-session', {
+    fetch('/workshop/api/save-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

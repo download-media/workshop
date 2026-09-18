@@ -22,7 +22,7 @@ export default function SummaryPage() {
     setInterpreting(true)
     setBriefError('')
     try {
-      const res = await fetch('/api/interpret', {
+      const res = await fetch('/workshop/api/interpret', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
