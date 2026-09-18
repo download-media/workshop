@@ -82,7 +82,10 @@ function FormSteps({
   const validateClient = async (): Promise<string | null> => {
     const name = clientName.trim()
     try {
-      const res = await fetch(`/workshop/api/clients?search=${encodeURIComponent(name)}`)
+      const abort = new AbortController()
+      const timer = setTimeout(() => abort.abort(), 4000)
+      const res = await fetch(`/workshop/api/clients?search=${encodeURIComponent(name)}`, { signal: abort.signal })
+      clearTimeout(timer)
       if (!res.ok) return null
       const data = await res.json()
       const exact = (data.clients || []).find(
@@ -466,14 +469,17 @@ function SetupPage() {
     setFormVisible(true)
   }, [])
 
-  // Spacebar: first press starts video, second press skips to form
+  // Spacebar: first press starts video, second press skips to form.
+  // Once the form is visible the listener must stand down completely —
+  // swallowing Space here is what turned "Prima Strata" into "Primastrata".
   useEffect(() => {
+    if (formVisible) return
     function onKey(e: KeyboardEvent) {
       if (e.code === 'Space') {
         e.preventDefault()
         if (!started) {
           handleStart()
-        } else if (!formVisible) {
+        } else {
           handleSkipToForm()
         }
       }
@@ -521,46 +527,49 @@ function SetupPage() {
   // returning clients go straight through after the fade.
   const [newClientCode, setNewClientCode] = useState<string | null>(null)
 
-  async function handleLaunch() {
+  function handleLaunch() {
     if (!isReady || launching) return
     resetWorkshop()
     setConfig({ clientName, facilitatorName, serviceType, date })
     registerClient(clientName, facilitatorName, serviceType, date)
     setLaunching(true)
 
+    // Navigation NEVER waits on the network. The nav timer always fires after the
+    // fade; a fast, successful registration of a NEW client is the only thing
+    // allowed to intercept it, to pause on their access code first.
+    let navigated = false
+    const navTimer = setTimeout(() => { navigated = true; router.push('/overview') }, 700)
+
     // Register client + session in the DB while the fade runs. The returned session id
     // makes auto-save update one row instead of spawning duplicates; the canonical name
     // keeps "aeropress" and "AeroPress" tied to the same client record.
-    const startedAt = Date.now()
-    let data: { session?: { id: string }; client?: { name: string; access_code?: string | null }; created?: boolean } | null = null
-    try {
-      const res = await fetch('/workshop/api/save-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientName,
-          facilitator: facilitatorName,
-          serviceType,
-          date,
-          workshopData: { config: { clientName, facilitatorName, serviceType, date } },
-        }),
+    const abort = new AbortController()
+    const abortTimer = setTimeout(() => abort.abort(), 8000)
+    fetch('/workshop/api/save-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: abort.signal,
+      body: JSON.stringify({
+        clientName,
+        facilitator: facilitatorName,
+        serviceType,
+        date,
+        workshopData: { config: { clientName, facilitatorName, serviceType, date } },
+      }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.session?.id) setSessionId(data.session.id)
+        if (data?.client?.name && data.client.name !== clientName) {
+          setConfig({ clientName: data.client.name })
+        }
+        if (!navigated && data?.created && data?.client?.access_code) {
+          clearTimeout(navTimer)
+          setNewClientCode(data.client.access_code)
+        }
       })
-      data = res.ok ? await res.json() : null
-    } catch {}
-
-    if (data?.session?.id) setSessionId(data.session.id)
-    if (data?.client?.name && data.client.name !== clientName) {
-      setConfig({ clientName: data.client.name })
-    }
-
-    // Let the fade finish, then either surface the new access code or head in
-    const remaining = Math.max(0, 700 - (Date.now() - startedAt))
-    if (data?.created && data.client?.access_code) {
-      const code = data.client.access_code
-      setTimeout(() => setNewClientCode(code), remaining)
-    } else {
-      setTimeout(() => router.push('/overview'), remaining)
-    }
+      .catch(() => {})
+      .finally(() => clearTimeout(abortTimer))
   }
 
   return (

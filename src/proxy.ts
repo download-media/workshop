@@ -31,6 +31,14 @@ export async function proxy(req: NextRequest) {
       }
     } catch {}
   }
+  // API calls must fail loudly with JSON, never silently redirect to an HTML
+  // login page — that made every feature look broken with no explanation.
+  if (p.includes("/api/")) {
+    return NextResponse.json(
+      { error: "Signed out. Open download.lol/hq, sign in, then reload the workshop." },
+      { status: 401 }
+    );
+  }
   return NextResponse.redirect(LOGIN);
 }
 
