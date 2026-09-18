@@ -35,6 +35,12 @@ function FormSteps({
   const [step, setStep] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // New vs returning decides how the name is validated against the client list:
+  // a new client must not collide with an existing record, a returning one must match.
+  const [clientMode, setClientMode] = useState<'new' | 'returning'>('new')
+  const [clientError, setClientError] = useState<string | null>(null)
+  const [checking, setChecking] = useState(false)
+
   // Existing-client suggestions from the DB — picking one keeps the exact same
   // spelling so sessions always tie back to one client record
   const [suggestions, setSuggestions] = useState<{ id: string; name: string; facilitator: string }[]>([])
@@ -63,21 +69,56 @@ function FormSteps({
   }, [step])
 
   const canAdvance = () => {
-    if (step === 0) return clientName.trim().length > 0
+    if (step === 0) return clientName.trim().length > 0 && !checking
     if (step === 1) return facilitatorName.trim().length > 0
     if (step === 2) return date.length > 0
     if (step === 3) return true
     return false
   }
 
-  const advance = () => {
-    if (canAdvance() && step < 3) setStep(step + 1)
+  // Step 0 gate: check the typed name against the client list before moving on.
+  // New + exact match -> collision. Returning + no match -> nothing to resume.
+  // If the check itself fails (offline, server hiccup) the workshop is never blocked.
+  const validateClient = async (): Promise<string | null> => {
+    const name = clientName.trim()
+    try {
+      const res = await fetch(`/workshop/api/clients?search=${encodeURIComponent(name)}`)
+      if (!res.ok) return null
+      const data = await res.json()
+      const exact = (data.clients || []).find(
+        (c: { name: string }) => c.name.toLowerCase() === name.toLowerCase()
+      )
+      if (clientMode === 'new' && exact) {
+        setClientName(exact.name)
+        return `“${exact.name}” already exists`
+      }
+      if (clientMode === 'returning' && !exact) return `No client called “${name}” yet`
+    } catch {
+      return null
+    }
+    return null
+  }
+
+  const advance = async () => {
+    if (!canAdvance() || step >= 3) return
+    if (step === 0) {
+      setChecking(true)
+      const error = await validateClient()
+      setChecking(false)
+      if (error) {
+        setSuggestionsOpen(false)
+        setClientError(error)
+        return
+      }
+    }
+    setClientError(null)
+    setStep(step + 1)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && canAdvance()) {
       e.preventDefault()
-      advance()
+      void advance()
     }
   }
 
@@ -127,7 +168,7 @@ function FormSteps({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
-            className="flex flex-col items-center justify-center w-full max-w-[340px] h-[80px]"
+            className="flex flex-col items-center justify-center w-full max-w-[340px] min-h-[80px]"
           >
             <label className="title-caps-sm mb-3 text-[#1A1A1A]/35">
               {FORM_STEPS[step].label}
@@ -135,18 +176,67 @@ function FormSteps({
 
             {step === 0 && (
               <div className="relative w-full">
+                {/* New vs returning — same pill language as the service picker */}
+                <div className="mb-4 flex items-center justify-center gap-1.5">
+                  {([['new', 'NEW CLIENT'], ['returning', 'RETURNING']] as const).map(([mode, label]) => (
+                    <button
+                      key={mode}
+                      onClick={() => { setClientMode(mode); setClientError(null) }}
+                      className={`rounded-full px-4 py-1.5 text-[10px] font-bold tracking-wider transition-all duration-300 ${
+                        clientMode === mode
+                          ? 'bg-[#1A1A1A] text-white'
+                          : 'text-[#1A1A1A]/30 hover:text-[#1A1A1A]/55'
+                      }`}
+                      style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
                 <input
                   ref={inputRef}
                   type="text"
                   value={clientName}
-                  onChange={(e) => { setClientName(e.target.value); setSuggestionsOpen(true) }}
+                  onChange={(e) => { setClientName(e.target.value); setSuggestionsOpen(true); setClientError(null) }}
                   onKeyDown={handleKeyDown}
                   onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
-                  placeholder="Who is this for?"
+                  placeholder={clientMode === 'new' ? 'Who is this for?' : 'Which client is back?'}
                   className="w-full bg-transparent text-center text-xl font-bold tracking-tight text-[#1A1A1A] outline-none border-b border-[#1A1A1A]/10 pb-2 placeholder:text-[#1A1A1A]/18 focus:border-[#4A8AC2]/40"
                   style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
                 />
-                {suggestionsOpen && clientName.trim().length >= 2 && suggestions.length > 0 &&
+                {clientError && (
+                  <div
+                    className="absolute left-0 right-0 top-full mt-2 z-30 flex flex-col items-center gap-2 rounded-xl px-4 py-3"
+                    style={{
+                      background: 'rgba(255,255,255,0.9)',
+                      backdropFilter: 'blur(20px)',
+                      WebkitBackdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(0,0,0,0.06)',
+                      boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+                    }}
+                  >
+                    <p
+                      className="text-center text-[11px] font-semibold leading-snug text-[#1A1A1A]/70"
+                      style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                    >
+                      {clientError}
+                      {clientMode === 'new'
+                        ? ' — continue their existing record instead?'
+                        : ' — register them as a new client?'}
+                    </p>
+                    <button
+                      onClick={() => {
+                        setClientMode(clientMode === 'new' ? 'returning' : 'new')
+                        setClientError(null)
+                      }}
+                      className="rounded-full bg-[#1A1A1A] px-4 py-1.5 text-[10px] font-bold tracking-wider text-white transition-transform duration-300 hover:scale-[1.03]"
+                      style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                    >
+                      {clientMode === 'new' ? 'SWITCH TO RETURNING' : 'CREATE NEW CLIENT'}
+                    </button>
+                  </div>
+                )}
+                {!clientError && suggestionsOpen && clientName.trim().length >= 2 && suggestions.length > 0 &&
                   suggestions[0].name.toLowerCase() !== clientName.trim().toLowerCase() && (
                   <div
                     className="absolute left-0 right-0 top-full mt-2 z-30 rounded-xl overflow-hidden"
@@ -163,7 +253,10 @@ function FormSteps({
                         key={s.id}
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => {
+                          // Picking an existing record IS the returning flow, whatever the toggle said
                           setClientName(s.name)
+                          setClientMode('returning')
+                          setClientError(null)
                           setSuggestionsOpen(false)
                           setStep(1)
                         }}
@@ -238,11 +331,18 @@ function FormSteps({
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: canAdvance() ? 1 : 0.2 }}
-            onClick={advance}
+            onClick={() => void advance()}
             disabled={!canAdvance()}
             className="mt-3 text-[#1A1A1A]/30 hover:text-[#1A1A1A]/60 transition-colors"
           >
-            <ArrowRight className="h-5 w-5" />
+            {checking ? (
+              <span
+                className="block h-5 w-5 animate-spin rounded-full border-[1.5px] border-[#1A1A1A]/15 border-t-[#1A1A1A]/45"
+                aria-label="Checking client name"
+              />
+            ) : (
+              <ArrowRight className="h-5 w-5" />
+            )}
           </motion.button>
         ) : (
           <div className="mt-3 h-5" />
@@ -417,7 +517,11 @@ function SetupPage() {
     if (skipToForm && launching) setLaunching(false)
   }
 
-  function handleLaunch() {
+  // A brand-new client pauses on their freshly minted access code before entering;
+  // returning clients go straight through after the fade.
+  const [newClientCode, setNewClientCode] = useState<string | null>(null)
+
+  async function handleLaunch() {
     if (!isReady || launching) return
     resetWorkshop()
     setConfig({ clientName, facilitatorName, serviceType, date })
@@ -427,30 +531,36 @@ function SetupPage() {
     // Register client + session in the DB while the fade runs. The returned session id
     // makes auto-save update one row instead of spawning duplicates; the canonical name
     // keeps "aeropress" and "AeroPress" tied to the same client record.
-    fetch('/workshop/api/save-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        clientName,
-        facilitator: facilitatorName,
-        serviceType,
-        date,
-        workshopData: { config: { clientName, facilitatorName, serviceType, date } },
-      }),
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.session?.id) setSessionId(data.session.id)
-        if (data?.client?.name && data.client.name !== clientName) {
-          setConfig({ clientName: data.client.name })
-        }
+    const startedAt = Date.now()
+    let data: { session?: { id: string }; client?: { name: string; access_code?: string | null }; created?: boolean } | null = null
+    try {
+      const res = await fetch('/workshop/api/save-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientName,
+          facilitator: facilitatorName,
+          serviceType,
+          date,
+          workshopData: { config: { clientName, facilitatorName, serviceType, date } },
+        }),
       })
-      .catch(() => {})
+      data = res.ok ? await res.json() : null
+    } catch {}
 
-    // Navigate after a quick fade
-    setTimeout(() => {
-      router.push('/overview')
-    }, 700)
+    if (data?.session?.id) setSessionId(data.session.id)
+    if (data?.client?.name && data.client.name !== clientName) {
+      setConfig({ clientName: data.client.name })
+    }
+
+    // Let the fade finish, then either surface the new access code or head in
+    const remaining = Math.max(0, 700 - (Date.now() - startedAt))
+    if (data?.created && data.client?.access_code) {
+      const code = data.client.access_code
+      setTimeout(() => setNewClientCode(code), remaining)
+    } else {
+      setTimeout(() => router.push('/overview'), remaining)
+    }
   }
 
   return (
@@ -794,6 +904,59 @@ function SetupPage() {
               className="object-cover opacity-[0.1]"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#E8F0F6]/60" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══════════════════════════════════════════════════
+          NEW CLIENT REGISTERED — show their access code once,
+          on top of the cloud fade, before entering the workshop
+          ═══════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {newClientCode && (
+          <motion.div
+            className="fixed inset-0 z-[60] flex items-center justify-center px-6"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <div
+              className="flex w-full max-w-[360px] flex-col items-center gap-5 rounded-3xl px-8 py-9 text-center"
+              style={{
+                background: 'rgba(255,255,255,0.72)',
+                backdropFilter: 'blur(28px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(28px) saturate(140%)',
+                border: '1px solid rgba(255,255,255,0.6)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.08)',
+              }}
+            >
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#1A1A1A]/35"
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                New client registered
+              </p>
+              <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]"
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                {config.clientName || clientName}
+              </p>
+              <div className="w-full rounded-2xl border border-[#1A1A1A]/[0.06] bg-white/60 px-4 py-4">
+                <p className="mb-2 text-[10px] font-bold tracking-[0.15em] uppercase text-[#1A1A1A]/30"
+                  style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                  Access code
+                </p>
+                <p className="font-mono text-xl tracking-[0.25em] text-[#1A1A1A]">{newClientCode}</p>
+              </div>
+              <p className="max-w-[260px] text-xs leading-relaxed text-[#1A1A1A]/40"
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                This is their password for the client portal. It stays available under Clients.
+              </p>
+              <button
+                onClick={() => router.push('/overview')}
+                className="rounded-full bg-[#1A1A1A] px-6 py-2.5 text-[11px] font-bold tracking-wider text-white transition-transform duration-300 hover:scale-[1.03]"
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+              >
+                START THE WORKSHOP →
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

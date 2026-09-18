@@ -23,9 +23,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Find or create client
+    let created = false
     let client = await getClientByName(clientName)
     if (!client) {
       client = await createClientRecord(clientName, facilitator)
+      created = true
     }
 
     // One session per client + service + date — same-day work continues, a new day is a new version
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
     if (workshopData && Object.keys(workshopData).length > 0) {
       session = await updateSession(session.id, workshopData)
     }
-    return NextResponse.json({ session, client })
+    return NextResponse.json({ session, client, created })
   } catch (error) {
     console.error('Save session error:', error)
     return NextResponse.json(
